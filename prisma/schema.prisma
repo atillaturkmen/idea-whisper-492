@@ -1,0 +1,74 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model DiscussionPost {
+  id                            Int           @id @default(autoincrement())
+  topic                         String        @db.Text
+  max_nof_selections            Int
+  can_see_votes_during_voting   Boolean       @map("can_see_votes_during_voting")
+  admin_link                    String        @db.VarChar(255)
+  topic_edit_date               DateTime?     @map("topic_edit_date")
+  will_be_voted                 Boolean       @map("will_be_voted")
+  vote_start_date               DateTime?     @map("vote_start_date")
+  vote_end_date                 DateTime?     @map("vote_end_date")
+  VisitorLink                   VisitorLink[]
+  Idea                          Idea[]
+}
+
+model VisitorLink {
+  link                String         @id @db.VarChar(255)
+  idDiscussionPost    Int
+  DiscussionPost      DiscussionPost @relation(fields: [idDiscussionPost], references: [id])
+}
+
+model Idea {
+  id                Int           @id @default(autoincrement())
+  created_by        String        @db.VarChar(255)
+  nof_likes         Int           @default(0)
+  create_date       DateTime      @map("create_date")
+  edit_date         DateTime?     @map("edit_date")
+  edited_by_admin   Boolean?      @map("edited_by_admin")
+  text_body         String        @db.Text
+  idDiscussionPost  Int
+  DiscussionPost    DiscussionPost @relation(fields: [idDiscussionPost], references: [id])
+  Vote              Vote[]
+  Pro               Pro[]
+  Con               Con[]
+}
+
+model Vote {
+  id       Int  @id @default(autoincrement())
+  vote_date DateTime @map("vote_date")
+  idIdea   Int
+  Idea     Idea  @relation(fields: [idIdea], references: [id])
+}
+
+model Pro {
+  id               Int       @id @default(autoincrement())
+  created_by       String    @db.VarChar(255)
+  nof_likes        Int       @default(0)
+  create_date      DateTime  @map("create_date")
+  edit_date        DateTime? @map("edit_date")
+  edited_by_admin  Boolean?  @map("edited_by_admin")
+  text_body        String    @db.Text
+  idIdea           Int
+  Idea             Idea      @relation(fields: [idIdea], references: [id])
+}
+
+model Con {
+  id               Int       @id @default(autoincrement())
+  created_by       String    @db.VarChar(255)
+  nof_likes        Int       @default(0)
+  create_date      DateTime  @map("create_date")
+  edit_date        DateTime? @map("edit_date")
+  edited_by_admin  Boolean?  @map("edited_by_admin")
+  text_body        String    @db.Text
+  idIdea           Int
+  Idea             Idea      @relation(fields: [idIdea], references: [id])
+}
