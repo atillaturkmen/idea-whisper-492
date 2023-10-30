@@ -4,7 +4,7 @@ import prisma from "@/prisma";
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
     if (req.method === 'POST') {
         try {
-            const {idea, startDate, endDate, allowVoteVisibility, allowMultipleSelections, maxSelections} = req.body;
+            const {topic, startDate, endDate, allowVoteVisibility, allowMultipleSelections, maxSelections} = req.body;
 
             const randomAdminLink = generateRandomLink(255);
 
@@ -12,7 +12,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
             await prisma.discussionPost.create({
                 data: {
-                    topic: idea,
+                    topic: topic,
                     vote_start_date: startDate,
                     vote_end_date: endDate,
                     can_see_votes_during_voting: allowVoteVisibility,

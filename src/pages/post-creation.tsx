@@ -5,7 +5,7 @@ import ReactModal from 'react-modal';
 import styles from '../styles/Modal.module.css';
 
 const PostCreation: React.FC = () => {
-    const [idea, setIdea] = useState("");
+    const [topic, setTopic] = useState("");
     const [startDate, setStartDate] = useState(new Date());
     const [endDate, setEndDate] = useState(new Date());
     const [allowVoteVisibility, setAllowVoteVisibility] = useState(false);
@@ -62,7 +62,7 @@ const PostCreation: React.FC = () => {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify({
-                idea,
+                topic: topic,
                 startDate,
                 endDate,
                 allowVoteVisibility,
@@ -89,12 +89,12 @@ const PostCreation: React.FC = () => {
             <h1>Idea Whisper</h1>
 
             <textarea
-                value={idea}
-                onChange={(e) => setIdea(e.target.value)}
-                placeholder="Your idea to discuss along with others"
+                value={topic}
+                onChange={(e) => setTopic(e.target.value)}
+                placeholder="Your discussion topic to discuss along with others"
                 maxLength={200}
             />
-            <div>{idea.length} / 200</div>
+            <div>{topic.length} / 200</div>
 
             <label>Voting Start Date</label>
             <DatePicker
