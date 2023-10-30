@@ -2,7 +2,8 @@ import React, {useState} from 'react';
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import ReactModal from 'react-modal';
-import styles from '../styles/Modal.module.css';
+import styles_modal from '../styles/Modal.module.css';
+import styles_page from '../styles/PostCreation.module.css';
 
 const PostCreation: React.FC = () => {
     const [topic, setTopic] = useState("");
@@ -32,19 +33,19 @@ const PostCreation: React.FC = () => {
             onRequestClose={onRequestClose}
             contentLabel="Admin and Visitor Links"
             ariaHideApp={false}
-            className={styles.modalContainer}
+            className={styles_modal.modalContainer}
         >
             {adminLink && visitorLink ? (
-                <div className={styles.modalContent}>
+                <div className={styles_modal.modalContent}>
                     <b>ENSURE THAT YOU SAVE THESE LINKS SOMEWHERE BECAUSE THEY WILL BE LOST ONCE YOU CLOSE THIS WINDOW!</b>
                     <br/><br/>
                     <h2>Admin Link:</h2>
-                    <p className={styles.link}>{adminLink}</p>
+                    <p className={styles_modal.link}>{adminLink}</p>
                     <br/><br/>
                     <p>The Admin Link is a confidential and special access link for discussion administrators or moderators. It empowers them with advanced control over the discussion, enabling actions like editing or removing posts, managing user accounts, and ensuring discussion quality. This link is kept private and is not visible to regular users.</p>
                     <br/><br/>
                     <h2>Visitor Link:</h2>
-                    <p className={styles.link}>{visitorLink}</p>
+                    <p className={styles_modal.link}>{visitorLink}</p>
                     <br/><br/>
                     <p>The Visitor Link is your invitation to join and engage in the discussion. Clicking this link grants you access to the conversation, allowing you to post comments, replies, and even vote on poll questions. It&apos;s a simple way to participate and share your thoughts within the discussion community.</p>
                     <br/><br/>
@@ -85,7 +86,7 @@ const PostCreation: React.FC = () => {
     };
 
     return (
-        <div>
+        <div className={styles_page.container}>
             <h1>Idea Whisper</h1>
 
             <textarea
@@ -93,20 +94,29 @@ const PostCreation: React.FC = () => {
                 onChange={(e) => setTopic(e.target.value)}
                 placeholder="Your discussion topic to discuss along with others"
                 maxLength={200}
+                rows={5}
             />
             <div>{topic.length} / 200</div>
 
-            <label>Voting Start Date</label>
-            <DatePicker
-                selected={startDate}
-                onChange={date => setStartDate(date as Date)}
-            />
+            <div className={styles_page.datePickerContainer}>
+                <div className={styles_page.datePickerItem}>
+                    <label>Voting Start Date</label>
+                    <DatePicker
+                        selected={startDate}
+                        onChange={(date) => setStartDate(date as Date)}
+                        className={styles_page.datePicker}
+                    />
+                </div>
 
-            <label>Voting End Date</label>
-            <DatePicker
-                selected={endDate}
-                onChange={date => setEndDate(date as Date)}
-            />
+                <div className={styles_page.datePickerItem}>
+                    <label>Voting End Date</label>
+                    <DatePicker
+                        selected={endDate}
+                        onChange={(date) => setEndDate(date as Date)}
+                        className={styles_page.datePicker}
+                    />
+                </div>
+            </div>
 
             <div>
                 <label>
