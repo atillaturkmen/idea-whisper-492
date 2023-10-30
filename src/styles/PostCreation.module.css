@@ -51,6 +51,7 @@
     justify-content: space-between;
     width: 50%;
     margin-top: 10px;
+    margin-bottom: 10px;
 }
 
 /* Date picker item */
@@ -70,17 +71,6 @@
     align-self: center; /* Center horizontally within datePickerItem */
 }
 
-/* Button styles */
-.container button {
-    background-color: #545458;
-    color: white;
-    padding: 10px 20px;
-    border: none;
-    border-radius: 10px;
-    font-size: 20px;
-    cursor: pointer;
-    margin-top: 20px;
-}
 
 /* Modal link styles */
 .link {

@@ -6,6 +6,38 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         try {
             const {topic, startDate, endDate, allowVoteVisibility, allowMultipleSelections, maxSelections} = req.body;
 
+            if (startDate == null || endDate == null || topic == null || allowVoteVisibility == null || allowMultipleSelections == null || maxSelections == null) {
+                return res.status(400).json({
+                    success: false,
+                    error: 'Missing required parameters',
+                });
+            }
+
+            if (startDate >= endDate) {
+                return res.status(400).json({
+                    success: false,
+                    error: 'Start date must be before end date',
+                });
+            }
+            if (endDate < new Date()) {
+                return res.status(400).json({
+                    success: false,
+                    error: "End date must be in the future",
+                });
+            }
+            if (topic.length === 0) {
+                return res.status(400).json({
+                    success: false,
+                    error: "Topic cannot be empty",
+                });
+            }
+            if (allowMultipleSelections && maxSelections < 1) {
+                return res.status(400).json({
+                    success: false,
+                    error: "Maximum selections must be at least 1",
+                });
+            }
+
             const randomAdminLink = generateRandomLink(255);
 
             const randomVisitorLink = generateRandomLink(255);
@@ -26,7 +58,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                     },
                 }
             });
-            res.status(200).json({
+            return res.status(200).json({
                 success: true,
                 adminLink: randomAdminLink,
                 visitorLink: randomVisitorLink,
