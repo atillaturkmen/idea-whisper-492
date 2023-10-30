@@ -7,7 +7,7 @@ import {useEffect} from "react";
 
 const DiscussionPage: React.FC = () => {
     const [discussion, setDiscussion] = useState("");
-    const [ideaIDs, setIdeaIDs] = useState<string[]>([]);
+    const [ideas, setIdeas] = useState<string[]>([]);
     const [startDate, setStartDate] = useState(new Date());
     const [endDate, setEndDate] = useState(new Date());
     const [allowVoteVisibility, setAllowVoteVisibility] = useState(false);
@@ -16,7 +16,7 @@ const DiscussionPage: React.FC = () => {
     const router = useRouter();
 
     const handleReceiveDiscussion = async (id: string) => {
-        const url = `/api/getDiscussion?id=${id}`;
+        const url = `/api/recevieDiscussion?id=${id}`;
         const response = await fetch(url, {
             method: 'GET',
             headers: {'Content-Type': 'application/json'},
@@ -25,7 +25,7 @@ const DiscussionPage: React.FC = () => {
         const data = await response.json();
         if (data.success) {
             setDiscussion(data.discussion);
-            setIdeaIDs(data.idea_ids);
+            setIdeas(data.ideas);
             setStartDate(data.vote_start_date);
             setEndDate(data.vote_end_date);
             setAllowVoteVisibility(data.can_see_votes_during_voting);
@@ -33,7 +33,6 @@ const DiscussionPage: React.FC = () => {
             setMaxSelections(data.max_nof_selections);
         } else {
             // Directs to index page
-            const router = useRouter();
             router.push('/');
         }
     }
@@ -48,7 +47,7 @@ const DiscussionPage: React.FC = () => {
             <h1>Idea Whisper</h1>
 
             <div>{discussion}</div>
-            <div>{ideaIDs}</div>
+            <div>{ideas}</div>
             <div>{allowVoteVisibility}</div>
             <div>{allowMultipleSelections}</div>
             <div>{maxSelections}</div>
