@@ -1,7 +1,15 @@
 import React from 'react';
 import Image from 'next/image';
+import {useRouter} from "next/router";
+import buttonStyles from '../styles/Button.module.css';
 
 const IdeaWhisper: React.FC = () => {
+    const router = useRouter();
+
+    const handleButtonClick = () => {
+        router.push('/post-creation');
+    }
+
   return (
       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100vh' }}>
 
@@ -18,7 +26,7 @@ const IdeaWhisper: React.FC = () => {
             <i>Unleash Your Ideas Anonymously, Spark Engaging Conversations, <br/>and Empower the Best with Your Votes!</i>
           </div>
 
-          <button>
+          <button className={buttonStyles.button} onClick={handleButtonClick}>
             Create Discussion
           </button>
         </div>
