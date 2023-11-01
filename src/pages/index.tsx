@@ -1,6 +1,7 @@
 import React from 'react';
 import Image from 'next/image';
 import {useRouter} from "next/router";
+import buttonStyles from '../styles/Button.module.css';
 
 const IdeaWhisper: React.FC = () => {
     const router = useRouter();
@@ -25,7 +26,7 @@ const IdeaWhisper: React.FC = () => {
             <i>Unleash Your Ideas Anonymously, Spark Engaging Conversations, <br/>and Empower the Best with Your Votes!</i>
           </div>
 
-          <button onClick={handleButtonClick}>
+          <button className={buttonStyles.button} onClick={handleButtonClick}>
             Create Discussion
           </button>
         </div>

@@ -1,0 +1,48 @@
+/* Modal.module.css */
+.modalContainer {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+    overflow: auto; /* Enable scrolling for the modal container */
+}
+
+.modalContent {
+    background-color: #fff;
+    border-radius: 5px;
+    padding: 20px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+    width: 80%;
+    max-width: 400px;
+    text-align: center;
+    position: relative;
+    max-height: 80%; /* Set a maximum height for the modal content */
+    overflow-y: auto; /* Enable scrolling for the modal content */
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    margin: auto;
+}
+
+
+
+
+@media (max-width: 768px) {
+    .modalContent {
+        height: 50%;
+        width: 90%; /* Adjust width for smaller screens */
+        max-width: none; /* Remove maximum width for smaller screens */
+    }
+}
+
+/* Modal.module.css */
+.link {
+    word-wrap: break-word; /* Allow link to wrap to the next line */
+}

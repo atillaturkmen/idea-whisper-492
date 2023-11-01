@@ -6,13 +6,3 @@ body {
   background: #fef6df;
   font-family: Arial, sans-serif;
 }
-
-button {
-  background-color: #545458;
-  color: white;
-  padding: 10px 20px;
-  border: none;
-  border-radius: 10px;
-  font-size: 20px;
-  cursor: pointer;
-}
