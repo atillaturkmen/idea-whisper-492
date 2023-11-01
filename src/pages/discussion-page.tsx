@@ -1,7 +1,9 @@
 import {useRouter} from "next/router";
+import { resolve } from "path";
 import React from "react";
 import {useState} from "react";
 import {useEffect} from "react";
+import Router from "next/router";
 
 
 const DiscussionPage: React.FC = () => {
@@ -14,38 +16,42 @@ const DiscussionPage: React.FC = () => {
     const [maxSelections, setMaxSelections] = useState(1);
     const router = useRouter();
 
-    const handleReceiveDiscussion = async (link: string) => {
-        const url = `/api/receiveDiscussion?link=${link}`;
+
+    const handleReceiveDiscussion = async (admin_link: string) => {
+        const url = `/api/receiveDiscussion?link=${admin_link}`;
+        
         const response = await fetch(url, {
             method: 'GET',
-            headers: {'Content-Type': 'application/json'},
+            headers: {'Content-Type': 'application/json'}
         });
-        const data = await response.json();
-        console.log(data);
-        if (data != null) {
-            setDiscussion(data.topic);
-            setIdeas(data.ideas);
-            setStartDate(data.vote_start_date);
-            setEndDate(data.vote_end_date);
-            setAllowVoteVisibility(data.can_see_votes_during_voting);
-            setAllowMultipleSelections(data.will_be_voted);
-            setMaxSelections(data.max_nof_selections);
-            console.log(data);
-        } else {
-            // Directs to index page
-            router.push('/');
-        }
-    }
+        try {
+            const data = await response.json();
+            if (data.status == 200) {
+                setDiscussion(data.topic);
+                //setIdeas(data.ideas);
+                //setStartDate(data.vote_start_date);
+                //setEndDate(data.vote_end_date);
+                setAllowVoteVisibility(data.can_see_votes_during_voting);
+                setAllowMultipleSelections(data.will_be_voted);
+                setMaxSelections(data.max_nof_selections);
+            } else {
+                // Directs to index page
+            }
+        } catch (error) {
+            console.log(error);
+        };
+    } 
     useEffect(() => {
-        const link = router.query.link;
-        if (link) {
-            handleReceiveDiscussion(link as string);
+        const admin_link = router.query.link;
+        if (admin_link) {
+            handleReceiveDiscussion(admin_link as string);
         }
     }, [router.query]);
+    
     return (
         <div>
             <h1>Idea Whisper</h1>
-
+            <h2>{discussion}</h2>
         </div>
     );
 }
