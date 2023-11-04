@@ -1,0 +1,38 @@
+.container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px;
+}
+
+/* Heading styles */
+.container h1 {
+    font-size: 24px;
+    margin-bottom: 20px;
+}
+
+.box {
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background-color: #61677A;
+    width: 85%;
+    box-sizing: border-box;
+    border-radius: 10px;
+}
+
+.topic {
+    font-size: 15px;
+    color: white;
+    font-style: italic;
+    display: flex;
+}
+
+.timer {
+    font-size: 20px;
+    color: red;
+    font-style: italic;
+    display: flex;
+    padding-bottom: 25px;
+}
