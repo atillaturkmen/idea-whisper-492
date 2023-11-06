@@ -14,7 +14,7 @@ const IdeaWhisper: React.FC = () => {
       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100vh' }}>
 
           <div style={{ position: 'absolute', top: '10px', left: '10px' }}>
-              <Image src="/whisper.jpg" alt="image" width={300} height={300} />
+              <Image src="/whisper.png" alt="image" width={300} height={300} />
           </div>
 
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
