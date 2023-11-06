@@ -1,10 +1,9 @@
 import React, {useState} from 'react';
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
-import ReactModal from 'react-modal';
-import styles_modal from '../styles/Modal.module.css';
 import styles_page from '../styles/PostCreation.module.css';
 import buttonStyles from '../styles/Button.module.css';
+import {useRouter} from "next/navigation";
 
 const PostCreation: React.FC = () => {
     const [topic, setTopic] = useState("");
@@ -13,60 +12,9 @@ const PostCreation: React.FC = () => {
     const [allowVoteVisibility, setAllowVoteVisibility] = useState(false);
     const [allowMultipleSelections, setAllowMultipleSelections] = useState(false);
     const [maxSelections, setMaxSelections] = useState(1);
-    const [adminLink, setAdminLink] = useState<string>("");
-    const [visitorLink, setVisitorLink] = useState<string>("");
-    const [isModalOpen, setIsModalOpen] = useState(false);
-
-    const handleOpenModal = () => {
-        setIsModalOpen(true);
-    };
-
-    const handleCloseModal = () => {
-        setIsModalOpen(false);
-    };
-
-    const Modal: React.FC<{ isOpen: boolean; onRequestClose: () => void }> = ({
-                                                                                  isOpen,
-                                                                                  onRequestClose,
-                                                                              }) => (
-        <ReactModal
-            isOpen={isOpen}
-            onRequestClose={onRequestClose}
-            contentLabel="Admin and Visitor Links"
-            ariaHideApp={false}
-            className={styles_modal.modalContainer}
-        >
-            {adminLink && visitorLink ? (
-                <div className={styles_modal.modalContent}>
-                    <b>ENSURE THAT YOU SAVE THESE LINKS SOMEWHERE BECAUSE THEY WILL BE LOST ONCE YOU CLOSE THIS
-                        WINDOW!</b>
-                    <br/><br/>
-                    <h2>Admin Link:</h2>
-                    <p className={styles_modal.link}>{adminLink}</p>
-                    <br/><br/>
-                    <p>The Admin Link is a confidential and special access link for discussion administrators or
-                        moderators. It empowers them with advanced control over the discussion, enabling actions like
-                        editing or removing posts, managing user accounts, and ensuring discussion quality. This link is
-                        kept private and is not visible to regular users.</p>
-                    <br/><br/>
-                    <h2>Visitor Link:</h2>
-                    <p className={styles_modal.link}>{visitorLink}</p>
-                    <br/><br/>
-                    <p>The Visitor Link is your invitation to join and engage in the discussion. Clicking this link
-                        grants you access to the conversation, allowing you to post comments, replies, and even vote on
-                        poll questions. It&apos;s a simple way to participate and share your thoughts within the
-                        discussion community.</p>
-                    <br/><br/>
-                    <button className={buttonStyles.button}>Go to discussion page</button>
-                </div>
-            ) : (
-                <p>Loading...</p>
-            )}
-        </ReactModal>
-    );
+    const router = useRouter();
 
     const handleSubmit = async () => {
-        handleOpenModal();
         const response = await fetch('/api/createDiscussion', {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
@@ -82,12 +30,8 @@ const PostCreation: React.FC = () => {
 
         const data = await response.json();
         if (data.success) {
-            const adminLink = `${window.location.origin}/discussion/${data.adminLink}`;
-            const visitorLink = `${window.location.origin}/discussion/${data.visitorLink}`;
-            setAdminLink(adminLink);
-            setVisitorLink(visitorLink);
+            router.push('/discussion-page?link=' + data.adminLink);
         } else {
-            handleCloseModal();
             alert(data.error);
         }
     };
@@ -161,7 +105,6 @@ const PostCreation: React.FC = () => {
             <br/>
 
             <button className={buttonStyles.button} onClick={handleSubmit}>Create Discussion</button>
-            <Modal isOpen={isModalOpen} onRequestClose={handleCloseModal}/>
         </div>
     );
 }
