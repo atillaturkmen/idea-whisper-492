@@ -11,6 +11,7 @@ const PostCreation: React.FC = () => {
     const [endDate, setEndDate] = useState<Date | null>(null);
     const [allowVoteVisibility, setAllowVoteVisibility] = useState(false);
     const [allowMultipleSelections, setAllowMultipleSelections] = useState(false);
+    const [willBeVoted, setwillBeVoted] = useState(false);
     const [maxSelections, setMaxSelections] = useState(1);
     const router = useRouter();
 
@@ -49,35 +50,45 @@ const PostCreation: React.FC = () => {
             />
             <div>{topic.length} / 200</div>
 
-            <div className={styles_page.datePickerContainer}>
-                <div className={styles_page.datePickerItem}>
-                    <label>Voting Start Date</label>
-                    <DatePicker
-                        inline
-                        dateFormat="dd/MM/yyyy"
-                        showIcon
-                        selected={startDate}
-                        onChange={(date) => setStartDate(date)}
-                        className={styles_page.datePicker}
-                        selectsStart
-                        minDate={new Date()}
-                    />
-                </div>
-
-                <div className={styles_page.datePickerItem}>
-                    <label>Voting End Date</label>
-                    <DatePicker
-                        inline
-                        dateFormat="dd/MM/yyyy"
-                        showIcon
-                        selected={endDate}
-                        onChange={(date) => setEndDate(date)}
-                        className={styles_page.datePicker}
-                        selectsEnd
-                        minDate={new Date()}
-                    />
-                </div>
+            <div>
+                <label>
+                    <input type="checkbox" checked={willBeVoted}
+                           onChange={() => setwillBeVoted(prev => !prev)}/>
+                    Discussion will be voted
+                </label>
             </div>
+
+            {willBeVoted && (
+                <div className={styles_page.datePickerContainer}>
+                    <div className={styles_page.datePickerItem}>
+                        <label>Voting Start Date</label>
+                        <DatePicker
+                            inline
+                            dateFormat="dd/MM/yyyy"
+                            showIcon
+                            selected={startDate}
+                            onChange={(date) => setStartDate(date)}
+                            className={styles_page.datePicker}
+                            selectsStart
+                            minDate={new Date()}
+                        />
+                    </div>
+
+                    <div className={styles_page.datePickerItem}>
+                        <label>Voting End Date</label>
+                        <DatePicker
+                            inline
+                            dateFormat="dd/MM/yyyy"
+                            showIcon
+                            selected={endDate}
+                            onChange={(date) => setEndDate(date)}
+                            className={styles_page.datePicker}
+                            selectsEnd
+                            minDate={new Date()}
+                        />
+                    </div>
+                </div>
+            )}
 
             <div>
                 <label>

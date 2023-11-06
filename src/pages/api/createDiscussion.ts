@@ -6,25 +6,29 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         try {
             const {topic, startDate, endDate, allowVoteVisibility, allowMultipleSelections, maxSelections} = req.body;
 
-            if (startDate == null || endDate == null || topic == null || allowVoteVisibility == null || allowMultipleSelections == null || maxSelections == null) {
+            if (topic == null || allowVoteVisibility == null || allowMultipleSelections == null || maxSelections == null
+                || (startDate == null && endDate != null) || (startDate != null && endDate == null)) {
                 return res.status(400).json({
                     success: false,
                     error: 'Missing required parameters',
                 });
             }
 
-            if (startDate >= endDate) {
-                return res.status(400).json({
-                    success: false,
-                    error: 'Start date must be before end date',
-                });
+            if (startDate != null && endDate != null) {
+                if (startDate >= endDate) {
+                    return res.status(400).json({
+                        success: false,
+                        error: 'Start date must be before end date',
+                    });
+                }
+                if (endDate < new Date()) {
+                    return res.status(400).json({
+                        success: false,
+                        error: "End date must be in the future",
+                    });
+                }
             }
-            if (endDate < new Date()) {
-                return res.status(400).json({
-                    success: false,
-                    error: "End date must be in the future",
-                });
-            }
+
             if (topic.length === 0) {
                 return res.status(400).json({
                     success: false,

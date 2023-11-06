@@ -1,4 +1,5 @@
 .topContainer {
+    padding-top: 20px;
     font-family: 'Arial', sans-serif;
     background-color: #c4bea8;
     border-radius: 8px;
@@ -15,6 +16,14 @@
 
 .votingNotice {
     color: #ff5756;
+    padding: 10px;
+    text-align: center;
+    font-weight: bold;
+    font-size: 2em;
+}
+
+.votingNoticeStarted {
+    color: green;
     padding: 10px;
     text-align: center;
     font-weight: bold;
@@ -46,6 +55,7 @@
     text-decoration: underline;
     font-weight: bold;
     font-size: 1.5em;
+    margin-top: 10px;
 }
 
 .ideaWhisperGoal {

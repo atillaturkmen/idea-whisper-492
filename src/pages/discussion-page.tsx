@@ -6,7 +6,9 @@ import {BsTrash} from 'react-icons/bs';
 import styles from '../styles/DiscussionPage.module.css';
 
 const DiscussionPage: React.FC = () => {
-    const [remainingDaysToVote, setRemainingDaysToVote] = useState(0);
+    const [votingNotice, setVotingNotice] = useState<string | null>(null);
+    const [willBeVoted, setWillBeVoted] = useState(true);
+    const [votingStarted, setVotingStarted] = useState(false);
     const [discussion, setDiscussion] = useState<any>(null);
     const router = useRouter();
 
@@ -20,12 +22,27 @@ const DiscussionPage: React.FC = () => {
         const discussion = await response.json();
         console.log(discussion);
         if (discussion) {
+            const startDate = discussion.vote_start_date;
             const endDate = discussion.vote_end_date;
-            if (endDate) {
+            if (startDate && endDate) {
                 const now = new Date();
-                const remainingTime = Date.parse(endDate.toString()) - now.getTime();
-                const remainingDays = Math.ceil(remainingTime / (1000 * 60 * 60 * 24));
-                setRemainingDaysToVote(remainingDays);
+                const remainingTimeUntilStart = Date.parse(startDate.toString()) - now.getTime();
+                const remainingTimeUntilEnd = Date.parse(endDate.toString()) - now.getTime();
+                if (remainingTimeUntilEnd < 0) {
+                    setVotingNotice(`!!Voting Closed!!`);
+                } else if (remainingTimeUntilStart < 0) {
+                    setVotingNotice(`!!Voting Started!!`);
+                    setVotingStarted(true);
+                } else {
+                    const remainingDaysUntilStart = Math.ceil(remainingTimeUntilStart / (1000 * 60 * 60 * 24));
+                    if (remainingDaysUntilStart === 1) {
+                        setVotingNotice(`!!Voting Period will Start in ${remainingDaysUntilStart} Day!!`);
+                    } else {
+                        setVotingNotice(`!!Voting Period will Start in ${remainingDaysUntilStart} Days!!`);
+                    }
+                }
+            } else {
+                setWillBeVoted(false);
             }
             setDiscussion(discussion);
         } else {
@@ -69,13 +86,17 @@ const DiscussionPage: React.FC = () => {
             ) : (
                 <>
                     <div className={styles.topContainer}>
-                        <div className={styles.votingNotice}>
-                            <span>!!Voting Period will Start in {remainingDaysToVote} Days!!</span>
-                        </div>
-                        <div className={styles.votingDates}>
-                            <div className={styles.dateContainer}>
-                                <span>Voting Start Date: <span className={styles.startingDate}>{new Date(discussion.vote_start_date).toLocaleDateString()}</span></span>
+                        {willBeVoted && (
+                            <div className={votingStarted ? styles.votingNoticeStarted : styles.votingNotice}>
+                                <span>{votingNotice}</span>
                             </div>
+                        )}
+                        <div className={styles.votingDates}>
+                            {willBeVoted && (
+                                <div className={styles.dateContainer}>
+                                    <span>Voting Start Date: <span className={styles.startingDate}>{new Date(discussion.vote_start_date).toLocaleDateString()}</span></span>
+                                </div>
+                            )}
                             <div>
                                 <button onClick={() => copyToClipboard(window.location.toString())} className={styles.copyButton}>
                                     Copy Admin Link
@@ -87,16 +108,20 @@ const DiscussionPage: React.FC = () => {
                                     </button>
                                 }
                             </div>
-                            <div className={styles.dateContainer}>
-                                <span>Voting End Date: <span className={styles.endDate}>{new Date(discussion.vote_end_date).toLocaleDateString()}</span></span>
+                            {willBeVoted && (
+                                <div className={styles.dateContainer}>
+                                    <span>Voting End Date: <span className={styles.endDate}>{new Date(discussion.vote_end_date).toLocaleDateString()}</span></span>
+                                </div>
+                            )}
+                        </div>
+                        {willBeVoted && (
+                            <div className={styles.votingDates}>
+                                <button
+                                    className={styles.editButton}>&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;Edit
+                                </button>
+                                <button className={styles.editButton}>Edit</button>
                             </div>
-                        </div>
-                        <div className={styles.votingDates}>
-                            <button
-                                className={styles.editButton}>&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;Edit
-                            </button>
-                            <button className={styles.editButton}>Edit</button>
-                        </div>
+                        )}
                         <p className={styles.goalText}>IDEA WHISPER GOAL</p>
                         <div className={styles.ideaWhisperGoal}>
                             <p>{discussion.topic}</p>
