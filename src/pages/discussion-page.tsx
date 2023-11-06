@@ -52,6 +52,16 @@ const DiscussionPage: React.FC = () => {
         });
     };
 
+    const copyToClipboard = (text:string) => {
+        if (navigator.clipboard) {
+            navigator.clipboard.writeText(text).then(() => {
+                alert('Link copied to clipboard');
+            }).catch(err => {
+                console.error('Could not copy text: ', err);
+            });
+        }
+    };
+
     return (
         <div>
             {discussion === null ? (
@@ -65,6 +75,17 @@ const DiscussionPage: React.FC = () => {
                         <div className={styles.votingDates}>
                             <div className={styles.dateContainer}>
                                 <span>Voting Start Date: <span className={styles.startingDate}>{new Date(discussion.vote_start_date).toLocaleDateString()}</span></span>
+                            </div>
+                            <div>
+                                <button onClick={() => copyToClipboard(window.location.toString())} className={styles.copyButton}>
+                                    Copy Admin Link
+                                </button>
+                                {
+                                    discussion.VisitorLink.length > 0 &&
+                                    <button onClick={() => copyToClipboard(`${location.origin}/discussion-page?link=${discussion.VisitorLink[0].link}`)} className={styles.copyButton}>
+                                        Copy Visitor Link
+                                    </button>
+                                }
                             </div>
                             <div className={styles.dateContainer}>
                                 <span>Voting End Date: <span className={styles.endDate}>{new Date(discussion.vote_end_date).toLocaleDateString()}</span></span>

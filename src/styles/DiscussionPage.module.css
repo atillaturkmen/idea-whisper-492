@@ -111,3 +111,19 @@
     margin-top: 10px;
     font-weight: bold;
 }
+
+.copyButton {
+    padding: 5px 10px;
+    margin-right: 20px;
+    border-radius: 4px;
+    border: none;
+    cursor: pointer;
+    background-color: #4caf50;
+    color: white;
+    font-size: 1rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.copyButton:hover {
+    background-color: #45a049;
+}
