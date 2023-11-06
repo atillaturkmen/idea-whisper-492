@@ -7,6 +7,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         let discussion = await prisma.discussionPost.findFirst({
             where: {
                 admin_link: String(link)
+            },
+            include: {
+                Idea: {
+                    include: {
+                        Pro: true,
+                        Con: true,
+                    }
+                }
             }
         });
 
@@ -22,6 +30,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             discussion = await prisma.discussionPost.findFirst({
                 where: {
                     id: visitor_link.idDiscussionPost
+                },
+                include: {
+                    Idea: {
+                        include: {
+                            Pro: true,
+                            Con: true,
+                        }
+                    }
                 }
             });
             const newDiscussion = {
