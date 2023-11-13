@@ -10,6 +10,9 @@ const DiscussionPage: React.FC = () => {
     const [willBeVoted, setWillBeVoted] = useState(true);
     const [votingStarted, setVotingStarted] = useState(false);
     const [discussion, setDiscussion] = useState<any>(null);
+    const [showAddIdeaForm, setShowAddIdeaForm] = useState<boolean>(false);
+    const [newIdeaText, setNewIdeaText] = useState<string>('');
+
     const router = useRouter();
 
     const handleReceiveDiscussion = async (link: string) => {
@@ -69,7 +72,7 @@ const DiscussionPage: React.FC = () => {
         });
     };
 
-    const copyToClipboard = (text:string) => {
+    const copyToClipboard = (text: string) => {
         if (navigator.clipboard) {
             navigator.clipboard.writeText(text).then(() => {
                 alert('Link copied to clipboard');
@@ -78,6 +81,42 @@ const DiscussionPage: React.FC = () => {
             });
         }
     };
+
+    const toggleAddIdeaForm = () => {
+        setShowAddIdeaForm(!showAddIdeaForm);
+    };
+
+    const handleInputChange = (e: any) => {
+        setNewIdeaText(e.target.value);
+    };
+
+    const submitNewIdea = async () => {
+        try {
+            const newIdea = {
+                text: newIdeaText,
+                discussionID: discussion.id,
+                creator: "Anonymous"
+            };
+            const response = await fetch('/api/createIdea', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(newIdea)
+            });
+            const data = await response.json();
+            if (data.success) {
+                const link = router.query.link;
+                if (link) {
+                    handleReceiveDiscussion(link as string);
+                }
+            } else {
+                console.log('Error submitting idea:', data);
+            }
+        } catch (error) {
+            console.error('Error submitting idea:', error);
+        }
+        toggleAddIdeaForm();
+    };
+
 
     return (
         <div>
@@ -94,23 +133,28 @@ const DiscussionPage: React.FC = () => {
                         <div className={styles.votingDates}>
                             {willBeVoted && (
                                 <div className={styles.dateContainer}>
-                                    <span>Voting Start Date: <span className={styles.startingDate}>{new Date(discussion.vote_start_date).toLocaleDateString()}</span></span>
+                                    <span>Voting Start Date: <span
+                                        className={styles.startingDate}>{new Date(discussion.vote_start_date).toLocaleDateString()}</span></span>
                                 </div>
                             )}
                             <div>
-                                <button onClick={() => copyToClipboard(window.location.toString())} className={styles.copyButton}>
+                                <button onClick={() => copyToClipboard(window.location.toString())}
+                                        className={styles.copyButton}>
                                     Copy Admin Link
                                 </button>
                                 {
                                     discussion.VisitorLink.length > 0 &&
-                                    <button onClick={() => copyToClipboard(`${location.origin}/discussion-page?link=${discussion.VisitorLink[0].link}`)} className={styles.copyButton}>
+                                    <button
+                                        onClick={() => copyToClipboard(`${location.origin}/discussion-page?link=${discussion.VisitorLink[0].link}`)}
+                                        className={styles.copyButton}>
                                         Copy Visitor Link
                                     </button>
                                 }
                             </div>
                             {willBeVoted && (
                                 <div className={styles.dateContainer}>
-                                    <span>Voting End Date: <span className={styles.endDate}>{new Date(discussion.vote_end_date).toLocaleDateString()}</span></span>
+                                    <span>Voting End Date: <span
+                                        className={styles.endDate}>{new Date(discussion.vote_end_date).toLocaleDateString()}</span></span>
                                 </div>
                             )}
                         </div>
@@ -127,7 +171,9 @@ const DiscussionPage: React.FC = () => {
                             <p>{discussion.topic}</p>
                         </div>
                         <div className={styles.votingDates}>
-                            <button className={styles.ideaEntryButton}>Add Idea</button>
+                            <button onClick={toggleAddIdeaForm} className={styles.ideaEntryButton}>
+                                Add Idea
+                            </button>
                             <div>
                                 <button>
                                     <BsTrash/>
@@ -138,6 +184,23 @@ const DiscussionPage: React.FC = () => {
                     </div>
                     <br/>
                     <div className={styles.bottomContainer}>
+                        {showAddIdeaForm && (
+                            <form onSubmit={(e) => {
+                                e.preventDefault();
+                                submitNewIdea();
+                            }}>
+                                <textarea name="text"
+                                          onChange={handleInputChange}
+                                          value={newIdeaText}
+                                          rows={4}
+                                          cols={50}
+                                          placeholder="Enter your idea here..."
+                                          className={styles.ideaTextarea}/>
+                                <br/>
+                                <button className={styles.submitButton} type="submit">Submit Idea</button>
+                                <br/><br/>
+                            </form>
+                        )}
                         {discussion.Idea.map((idea: any) => (
                             <>
                                 <div key={idea.id} className={styles.ideaBox}>

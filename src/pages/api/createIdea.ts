@@ -4,31 +4,20 @@ import prisma from "@/prisma";
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
     if (req.method === 'POST') {
         try {
-            const {text, creator, numberOfLikes, creationDate, editDate, editedByAdmin, discussionID} = req.body;
+            const {text, creator, editedByAdmin, discussionID} = req.body;
+            const creationDate = new Date();
 
-            if (text == null || creator == null || numberOfLikes == null || creationDate == null || discussionID == null) {
+            if (text == null || creator == null || discussionID == null) {
                 return res.status(400).json({
                     success: false,
                     error: 'Missing required parameters',
                 });
             }
 
-            if (editDate != null && creationDate >= editDate) {
-                return res.status(400).json({
-                    success: false,
-                    error: 'Creation date must be before edit date',
-                });
-            }
             if (text.length === 0) {
                 return res.status(400).json({
                     success: false,
                     error: "Text cannot be empty",
-                });
-            }
-            if (numberOfLikes < 0) {
-                return res.status(400).json({
-                    success: false,
-                    error: "Number of likes cannot be negative",
                 });
             }
 
@@ -48,9 +37,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             await prisma.idea.create({
                 data: {
                     created_by: creator,
-                    nof_likes: numberOfLikes,
                     create_date: creationDate,
-                    edit_date: editDate,
                     edited_by_admin: editedByAdmin,
                     text_body: text,
                     idDiscussionPost: Number(discussionID),

@@ -137,3 +137,28 @@
 .copyButton:hover {
     background-color: #45a049;
 }
+
+.submitButton {
+    background-color: #545458;
+    color: white;
+    padding: 5px 10px;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    margin: 10px;
+}
+
+.submitButton:hover {
+    background-color: #696969; /* Darker grey on hover */
+}
+
+.ideaTextarea {
+    width: 100%; /* Full width */
+    padding: 10px; /* Padding inside the textarea */
+    margin: 8px 0; /* Margin for spacing */
+    display: inline-block; /* Inline block display */
+    border: 1px solid #ccc; /* Border color */
+    border-radius: 4px; /* Rounded corners */
+    box-sizing: border-box; /* Box sizing to include padding in width/height */
+    resize: vertical; /* Allow only vertical resizing */
+}
