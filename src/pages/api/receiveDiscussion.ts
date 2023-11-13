@@ -7,6 +7,15 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         let discussion = await prisma.discussionPost.findFirst({
             where: {
                 admin_link: String(link)
+            },
+            include: {
+                Idea: {
+                    include: {
+                        Pro: true,
+                        Con: true,
+                    }
+                },
+                VisitorLink: true,
             }
         });
 
@@ -22,6 +31,15 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             discussion = await prisma.discussionPost.findFirst({
                 where: {
                     id: visitor_link.idDiscussionPost
+                },
+                include: {
+                    Idea: {
+                        include: {
+                            Pro: true,
+                            Con: true,
+                        }
+                    },
+                    VisitorLink: true,
                 }
             });
             const newDiscussion = {
@@ -34,7 +52,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             ...discussion,
             is_admin: true,
         };
-        
+
+        // don't send visitor links if email method is used
+        if (newDiscussion.VisitorLink.length > 1) {
+            newDiscussion.VisitorLink = [];
+        }
+
         return res.status(200).json(newDiscussion);
     }
     return res.status(405).end(); 
