@@ -1,38 +1,139 @@
-.container {
+.topContainer {
+    padding-top: 20px;
+    font-family: 'Arial', sans-serif;
+    background-color: #c4bea8;
+    border-radius: 8px;
+    padding-left: 10em;
+    padding-right: 10em;
+}
+
+.bottomContainer {
+    font-family: 'Arial', sans-serif;
+    border-radius: 8px;
+    padding-left: 10em;
+    padding-right: 10em;
+}
+
+.votingNotice {
+    color: #ff5756;
+    padding: 10px;
+    text-align: center;
+    font-weight: bold;
+    font-size: 2em;
+}
+
+.votingNoticeStarted {
+    color: green;
+    padding: 10px;
+    text-align: center;
+    font-weight: bold;
+    font-size: 2em;
+}
+
+.votingDates {
     display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 20px;
+    justify-content: space-between;
 }
 
-/* Heading styles */
-.container h1 {
-    font-size: 24px;
-    margin-bottom: 20px;
+.startingDate {
+    color: #c4fcb0;
 }
 
-.box {
-    padding: 20px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    background-color: #61677A;
-    width: 85%;
-    box-sizing: border-box;
-    border-radius: 10px;
+.endDate {
+    color: #fd8889;
 }
 
-.topic {
-    font-size: 15px;
+.dateContainer {
     color: white;
-    font-style: italic;
-    display: flex;
+    padding: 5px 10px;
+    background-color: #606779;
+    border-radius: 8px;
 }
 
-.timer {
-    font-size: 20px;
-    color: red;
-    font-style: italic;
-    display: flex;
-    padding-bottom: 25px;
+.goalText {
+    color: white;
+    text-decoration: underline;
+    font-weight: bold;
+    font-size: 1.5em;
+    margin-top: 10px;
+}
+
+.ideaWhisperGoal {
+    background-color: #606779;
+    color: white;
+    padding: 20px;
+    border-radius: 8px;
+}
+
+.ideaEntryButton {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.editButton {
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: bold;
+    padding: 5px;
+}
+
+.ideaBox {
+    background-color: #d8d8d8;
+    color: #444444;
+    padding: 15px 15px 5px;
+    border-radius: 8px;
+}
+
+.addProText {
+    color: #29bd4e;
+    padding: 5px;
+    font-weight: bold;
+}
+
+.addConText {
+    color: #fd5857;
+    padding: 5px;
+    font-weight: bold;
+}
+
+.proBox {
+    background-color: #aee0a3;
+    color: #444444;
+    margin-left: 100px;
+    border-radius: 8px;
+    padding: 15px 15px 5px;
+}
+
+.conBox {
+    background-color: #ffc9bc;
+    color: #444444;
+    margin-left: 100px;
+    border-radius: 8px;
+    padding: 15px 15px 5px;
+}
+
+.likeButton {
+    color: #29bd4e;
+    margin-top: 10px;
+    font-weight: bold;
+}
+
+.copyButton {
+    padding: 5px 10px;
+    margin-right: 20px;
+    border-radius: 4px;
+    border: none;
+    cursor: pointer;
+    background-color: #4caf50;
+    color: white;
+    font-size: 1rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.copyButton:hover {
+    background-color: #45a049;
 }
