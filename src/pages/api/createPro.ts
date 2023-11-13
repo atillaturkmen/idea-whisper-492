@@ -12,7 +12,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                     error: 'Missing required parameters',
                 });
             }
-
             if (editDate != null && creationDate >= editDate) {
                 return res.status(400).json({
                     success: false,
