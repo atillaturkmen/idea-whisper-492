@@ -10,6 +10,13 @@ const DiscussionPage: React.FC = () => {
     const [willBeVoted, setWillBeVoted] = useState(true);
     const [votingStarted, setVotingStarted] = useState(false);
     const [discussion, setDiscussion] = useState<any>(null);
+    const [showAddIdeaForm, setShowAddIdeaForm] = useState<boolean>(false);
+    const [newIdeaText, setNewIdeaText] = useState<string>('');
+    const [newProConText, setNewProConText] = useState<string>('');
+    const [showAddProConForm, setShowAddProConForm] = useState<boolean>(false);
+    const [newProConIdeaId, setNewProConIdeaId] = useState<number>(0);
+    const [isPro, setIsPro] = useState<boolean>(true);
+
     const router = useRouter();
 
     const handleReceiveDiscussion = async (link: string) => {
@@ -61,7 +68,9 @@ const DiscussionPage: React.FC = () => {
         // Make con id's negative so that they are different from pro id's
         // React needs unique keys for each element in a list
         idea.Con.forEach((con: any) => {
-            con.id = -con.id;
+            if (con.id > 0) {
+                con.id = -con.id;
+            }
         });
         const allReviews = idea.Pro.concat(idea.Con);
         return allReviews.sort((a: any, b: any) => {
@@ -69,7 +78,7 @@ const DiscussionPage: React.FC = () => {
         });
     };
 
-    const copyToClipboard = (text:string) => {
+    const copyToClipboard = (text: string) => {
         if (navigator.clipboard) {
             navigator.clipboard.writeText(text).then(() => {
                 alert('Link copied to clipboard');
@@ -78,6 +87,85 @@ const DiscussionPage: React.FC = () => {
             });
         }
     };
+
+    const toggleAddIdeaForm = () => {
+        setShowAddIdeaForm(!showAddIdeaForm);
+    };
+
+    const toggleAddProConForm = () => {
+        setShowAddProConForm(!showAddProConForm);
+    };
+
+    const handleIdeaInputChange = (e: any) => {
+        setNewIdeaText(e.target.value);
+    };
+
+    const handleProConInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+        setNewProConText(e.target.value);
+    };
+
+    const submitNewProCon = async () => {
+        try {
+            const newProCon = {
+                text: newProConText,
+                ideaID: newProConIdeaId,
+                creator: "Anonymous"
+            };
+            let url: string;
+            if (isPro) {
+                url = '/api/createPro';
+            } else {
+                url = '/api/createCon';
+            }
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(newProCon)
+            });
+            const data = await response.json();
+            if (data.success) {
+                const link = router.query.link;
+                if (link) {
+                    handleReceiveDiscussion(link as string);
+                }
+            } else {
+                console.log('Error submitting idea:', data);
+            }
+        } catch (error) {
+            console.error('Error submitting idea:', error);
+        }
+        toggleAddProConForm();
+        setNewProConText('');
+    };
+
+    const submitNewIdea = async () => {
+        try {
+            const newIdea = {
+                text: newIdeaText,
+                discussionID: discussion.id,
+                creator: "Anonymous"
+            };
+            const response = await fetch('/api/createIdea', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(newIdea)
+            });
+            const data = await response.json();
+            if (data.success) {
+                const link = router.query.link;
+                if (link) {
+                    handleReceiveDiscussion(link as string);
+                }
+            } else {
+                console.log('Error submitting idea:', data);
+            }
+        } catch (error) {
+            console.error('Error submitting idea:', error);
+        }
+        toggleAddIdeaForm();
+        setNewIdeaText('');
+    };
+
 
     return (
         <div>
@@ -94,23 +182,28 @@ const DiscussionPage: React.FC = () => {
                         <div className={styles.votingDates}>
                             {willBeVoted && (
                                 <div className={styles.dateContainer}>
-                                    <span>Voting Start Date: <span className={styles.startingDate}>{new Date(discussion.vote_start_date).toLocaleDateString()}</span></span>
+                                    <span>Voting Start Date: <span
+                                        className={styles.startingDate}>{new Date(discussion.vote_start_date).toLocaleDateString()}</span></span>
                                 </div>
                             )}
                             <div>
-                                <button onClick={() => copyToClipboard(window.location.toString())} className={styles.copyButton}>
+                                <button onClick={() => copyToClipboard(window.location.toString())}
+                                        className={styles.copyButton}>
                                     Copy Admin Link
                                 </button>
                                 {
                                     discussion.VisitorLink.length > 0 &&
-                                    <button onClick={() => copyToClipboard(`${location.origin}/discussion-page?link=${discussion.VisitorLink[0].link}`)} className={styles.copyButton}>
+                                    <button
+                                        onClick={() => copyToClipboard(`${location.origin}/discussion-page?link=${discussion.VisitorLink[0].link}`)}
+                                        className={styles.copyButton}>
                                         Copy Visitor Link
                                     </button>
                                 }
                             </div>
                             {willBeVoted && (
                                 <div className={styles.dateContainer}>
-                                    <span>Voting End Date: <span className={styles.endDate}>{new Date(discussion.vote_end_date).toLocaleDateString()}</span></span>
+                                    <span>Voting End Date: <span
+                                        className={styles.endDate}>{new Date(discussion.vote_end_date).toLocaleDateString()}</span></span>
                                 </div>
                             )}
                         </div>
@@ -127,7 +220,9 @@ const DiscussionPage: React.FC = () => {
                             <p>{discussion.topic}</p>
                         </div>
                         <div className={styles.votingDates}>
-                            <button className={styles.ideaEntryButton}>Add Idea</button>
+                            <button onClick={toggleAddIdeaForm} className={styles.ideaEntryButton}>
+                                Add Idea
+                            </button>
                             <div>
                                 <button>
                                     <BsTrash/>
@@ -138,6 +233,23 @@ const DiscussionPage: React.FC = () => {
                     </div>
                     <br/>
                     <div className={styles.bottomContainer}>
+                        {showAddIdeaForm && (
+                            <form onSubmit={(e) => {
+                                e.preventDefault();
+                                submitNewIdea();
+                            }}>
+                                <textarea name="text"
+                                          onChange={handleIdeaInputChange}
+                                          value={newIdeaText}
+                                          rows={4}
+                                          cols={50}
+                                          placeholder="Enter your idea here..."
+                                          className={styles.ideaTextarea}/>
+                                <br/>
+                                <button className={styles.submitButton} type="submit">Submit Idea</button>
+                                <br/><br/>
+                            </form>
+                        )}
                         {discussion.Idea.map((idea: any) => (
                             <>
                                 <div key={idea.id} className={styles.ideaBox}>
@@ -148,9 +260,34 @@ const DiscussionPage: React.FC = () => {
                                 </div>
                                 <div className={styles.votingDates}>
                                     <div>
-                                        <button className={styles.addProText}>Add pros</button>
-                                        <button className={styles.addConText}>Add cons</button>
+                                        <button onClick={() => {
+                                            toggleAddProConForm();
+                                            setNewProConIdeaId(idea.id);
+                                            setIsPro(true);
+                                        }} className={styles.addProText}>Add pro
+                                        </button>
+                                        <button onClick={() => {
+                                            toggleAddProConForm();
+                                            setNewProConIdeaId(idea.id);
+                                            setIsPro(false);
+                                        }} className={styles.addConText}>Add con
+                                        </button>
                                     </div>
+                                    {(showAddProConForm && idea.id == newProConIdeaId) && (
+                                        <form onSubmit={(e) => {
+                                            e.preventDefault();
+                                            submitNewProCon();
+                                        }}>
+                                            <textarea name="proText"
+                                                      onChange={handleProConInputChange}
+                                                      value={newProConText}
+                                                      rows={4}
+                                                      cols={50}
+                                                      placeholder="Enter your opinion here..."
+                                                      className={styles.ideaTextarea}/>
+                                            <button className={styles.submitButton} type="submit">Submit {isPro ? "Pro" : "Con"}</button>
+                                        </form>
+                                    )}
                                     <div>
                                         <button>
                                             <BsTrash/>
