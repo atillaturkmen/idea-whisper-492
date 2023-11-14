@@ -285,7 +285,7 @@ const DiscussionPage: React.FC = () => {
                                                       cols={50}
                                                       placeholder="Enter your opinion here..."
                                                       className={styles.ideaTextarea}/>
-                                            <button className={styles.submitButton} type="submit">Submit Pro</button>
+                                            <button className={styles.submitButton} type="submit">Submit {isPro ? "Pro" : "Con"}</button>
                                         </form>
                                     )}
                                     <div>
