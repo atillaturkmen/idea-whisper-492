@@ -69,7 +69,6 @@ describe('createDiscussion API Endpoint', () => {
             topic: 'Discussion Topic',
             startDate: new Date(),
             endDate: pastDate,
-            // ... other required fields
         };
 
         await handler(req, res);
