@@ -24,7 +24,7 @@ model DiscussionPost {
 model VisitorLink {
   link                String         @id @db.VarChar(255)
   idDiscussionPost    Int
-  DiscussionPost      DiscussionPost @relation(fields: [idDiscussionPost], references: [id])
+  DiscussionPost      DiscussionPost @relation(fields: [idDiscussionPost], references: [id], onDelete: Cascade)
 }
 
 model Idea {

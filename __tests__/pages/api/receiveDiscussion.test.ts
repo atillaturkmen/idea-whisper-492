@@ -1,4 +1,4 @@
-import { NextApiRequest, NextApiResponse } from 'next';
+import {NextApiRequest, NextApiResponse} from 'next';
 import handler from '@/pages/api/receiveDiscussion';
 import prisma from "@/prisma";
 
@@ -21,7 +21,19 @@ async function createDiscussion() {
             }
         });
     } catch (e) {
+    }
+}
 
+async function deleteDiscussion() {
+    try {
+        await prisma.discussionPost.deleteMany(
+            {
+                where: {
+                    admin_link: "admin_link",
+                }
+            }
+        );
+    } catch (e) {
     }
 }
 
@@ -50,6 +62,7 @@ describe('receiveDiscussion API Endpoint', () => {
 
         await handler(req, res);
 
+        await deleteDiscussion();
         expect(res.status).toHaveBeenCalledWith(200);
     });
 
@@ -62,6 +75,7 @@ describe('receiveDiscussion API Endpoint', () => {
 
         await handler(req, res);
 
+        await deleteDiscussion();
         expect(res.status).toHaveBeenCalledWith(200);
     });
 
