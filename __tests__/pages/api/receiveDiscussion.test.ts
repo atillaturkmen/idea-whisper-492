@@ -1,41 +1,6 @@
 import {NextApiRequest, NextApiResponse} from 'next';
 import handler from '@/pages/api/receiveDiscussion';
-import prisma from "@/prisma";
-
-async function createDiscussion() {
-    try {
-        await prisma.discussionPost.create({
-            data: {
-                topic: "topic",
-                vote_start_date: new Date(),
-                vote_end_date: new Date(),
-                can_see_votes_during_voting: true,
-                max_nof_selections: 3,
-                will_be_voted: true,
-                admin_link: "admin_link",
-                VisitorLink: {
-                    create: {
-                        link: "visitor_link",
-                    },
-                },
-            }
-        });
-    } catch (e) {
-    }
-}
-
-async function deleteDiscussion() {
-    try {
-        await prisma.discussionPost.deleteMany(
-            {
-                where: {
-                    admin_link: "admin_link",
-                }
-            }
-        );
-    } catch (e) {
-    }
-}
+import {createDiscussion, deleteDiscussion} from "../../../test-util/createDeleteDiscussion";
 
 describe('receiveDiscussion API Endpoint', () => {
     let req: NextApiRequest;

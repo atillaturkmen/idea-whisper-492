@@ -36,7 +36,7 @@ model Idea {
   edited_by_admin   Boolean?      @map("edited_by_admin")
   text_body         String        @db.Text
   idDiscussionPost  Int
-  DiscussionPost    DiscussionPost @relation(fields: [idDiscussionPost], references: [id])
+  DiscussionPost    DiscussionPost @relation(fields: [idDiscussionPost], references: [id], onDelete: Cascade)
   Vote              Vote[]
   Pro               Pro[]
   Con               Con[]
@@ -46,7 +46,7 @@ model Vote {
   id       Int  @id @default(autoincrement())
   vote_date DateTime @map("vote_date")
   idIdea   Int
-  Idea     Idea  @relation(fields: [idIdea], references: [id])
+  Idea     Idea  @relation(fields: [idIdea], references: [id], onDelete: Cascade)
 }
 
 model Pro {
@@ -58,7 +58,7 @@ model Pro {
   edited_by_admin  Boolean?  @map("edited_by_admin")
   text_body        String    @db.Text
   idIdea           Int
-  Idea             Idea      @relation(fields: [idIdea], references: [id])
+  Idea             Idea      @relation(fields: [idIdea], references: [id], onDelete: Cascade)
 }
 
 model Con {
@@ -70,5 +70,5 @@ model Con {
   edited_by_admin  Boolean?  @map("edited_by_admin")
   text_body        String    @db.Text
   idIdea           Int
-  Idea             Idea      @relation(fields: [idIdea], references: [id])
+  Idea             Idea      @relation(fields: [idIdea], references: [id], onDelete: Cascade)
 }
