@@ -284,7 +284,8 @@ const DiscussionPage: React.FC = () => {
                                                       cols={50}
                                                       placeholder="Enter your opinion here..."
                                                       className={styles.ideaTextarea}/>
-                                            <button className={styles.submitButton} type="submit">Submit {isPro ? "Pro" : "Con"}</button>
+                                            <button className={styles.submitButton}
+                                                    type="submit">Submit {isPro ? "Pro" : "Con"}</button>
                                         </form>
                                     )}
                                     <div>
@@ -299,7 +300,8 @@ const DiscussionPage: React.FC = () => {
                                         <div className={review.id < 0 ? styles.conBox : styles.proBox}>
                                             <div className={styles.votingDates}>
                                                 <p>{review.text_body}</p>
-                                                <button className={styles.likeButton}>+{review.nof_likes}</button>
+                                                {discussion.enable_likes && (
+                                                    <button className={styles.likeButton}>+{review.nof_likes}</button>)}
                                             </div>
                                         </div>
                                         <div className={styles.votingDates}>

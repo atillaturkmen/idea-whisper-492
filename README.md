@@ -20,6 +20,12 @@ You can start editing the page by modifying `app/index.tsx`. The page auto-updat
 
 This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
 
+## Apply Database Migrations
+
+```bash
+npx prisma migrate dev
+```
+
 ## Learn More
 
 To learn more about Next.js, take a look at the following resources:
