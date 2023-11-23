@@ -255,7 +255,6 @@ const DiscussionPage: React.FC = () => {
                                 <div key={idea.id} className={styles.ideaBox}>
                                     <div className={styles.votingDates}>
                                         <p>{idea.text_body}</p>
-                                        <button className={styles.likeButton}>+{idea.nof_likes}</button>
                                     </div>
                                 </div>
                                 <div className={styles.votingDates}>
