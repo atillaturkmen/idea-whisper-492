@@ -117,9 +117,24 @@
 }
 
 .likeButton {
-    color: #29bd4e;
-    margin-top: 10px;
+    color: #FFFFFF; /* Change text color to white for better contrast */
+    background-color: #132c85; /* Button background color */
+    padding: 2px; /* Add padding for a larger, more clickable area */
     font-weight: bold;
+    border: 2px solid #132c85; /* Border color similar to background for a cohesive look */
+    border-radius: 5px; /* Rounded corners */
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    transition: background-color 0.3s, border-color 0.3s, box-shadow 0.3s; /* Smooth transition for hover effects */
+    cursor: pointer; /* Change cursor to indicate button */
+    box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2); /* Subtle shadow for depth */
+}
+
+.likeButton:hover {
+    background-color: #1a4099; /* Slightly darker shade on hover */
+    border-color: #1a4099; /* Border color changes on hover */
+    box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.3); /* Increased shadow on hover for a "lifting" effect */
 }
 
 .copyButton {
