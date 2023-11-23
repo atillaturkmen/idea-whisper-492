@@ -4,6 +4,7 @@ import {useState} from "react";
 import {useEffect} from "react";
 import {BsTrash} from 'react-icons/bs';
 import styles from '../styles/DiscussionPage.module.css';
+import {getUserData, writeUserData} from "@/local-storage/userUtils";
 
 const DiscussionPage: React.FC = () => {
     const [votingNotice, setVotingNotice] = useState<string | null>(null);
@@ -16,6 +17,8 @@ const DiscussionPage: React.FC = () => {
     const [showAddProConForm, setShowAddProConForm] = useState<boolean>(false);
     const [newProConIdeaId, setNewProConIdeaId] = useState<number>(0);
     const [isPro, setIsPro] = useState<boolean>(true);
+    const [user, setUser] = useState<any>(null);
+    const [link, setLink] = useState<string>("");
 
     const router = useRouter();
 
@@ -27,7 +30,6 @@ const DiscussionPage: React.FC = () => {
         });
 
         const discussion = await response.json();
-        console.log(discussion);
         if (discussion) {
             const startDate = discussion.vote_start_date;
             const endDate = discussion.vote_end_date;
@@ -60,7 +62,9 @@ const DiscussionPage: React.FC = () => {
     useEffect(() => {
         const link = router.query.link;
         if (link) {
+            setLink(link as string);
             handleReceiveDiscussion(link as string);
+            setUser(getUserData(link as string));
         }
     }, [router.query]);
 
@@ -109,7 +113,7 @@ const DiscussionPage: React.FC = () => {
             const newProCon = {
                 text: newProConText,
                 ideaID: newProConIdeaId,
-                creator: "Anonymous"
+                creator: user.userId,
             };
             let url: string;
             if (isPro) {
@@ -143,7 +147,7 @@ const DiscussionPage: React.FC = () => {
             const newIdea = {
                 text: newIdeaText,
                 discussionID: discussion.id,
-                creator: "Anonymous"
+                creator: user.userId,
             };
             const response = await fetch('/api/createIdea', {
                 method: 'POST',
@@ -166,6 +170,36 @@ const DiscussionPage: React.FC = () => {
         setNewIdeaText('');
     };
 
+    async function likeProCon(proConId: number) {
+        try {
+            const url = "/api/likeProCon";
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    proConId: proConId,
+                    isIncrement: !user.liked.has(proConId)
+                })
+            });
+            const data = await response.json();
+            if (data.success) {
+                const link = router.query.link;
+                if (link) {
+                    handleReceiveDiscussion(link as string);
+                }
+            } else {
+                console.log('Error while liking:', data);
+            }
+        } catch (error) {
+            console.error('Error while liking:', error);
+        }
+        if (user.liked.has(proConId)) {
+            user.liked.delete(proConId);
+        } else {
+            user.liked.add(proConId);
+        }
+        writeUserData(link, user);
+    }
 
     return (
         <div>
@@ -251,8 +285,8 @@ const DiscussionPage: React.FC = () => {
                             </form>
                         )}
                         {discussion.Idea.map((idea: any) => (
-                            <>
-                                <div key={idea.id} className={styles.ideaBox}>
+                            <div key={idea.id}>
+                                <div className={styles.ideaBox}>
                                     <div className={styles.votingDates}>
                                         <p>{idea.text_body}</p>
                                     </div>
@@ -301,7 +335,8 @@ const DiscussionPage: React.FC = () => {
                                             <div className={styles.votingDates}>
                                                 <p>{review.text_body}</p>
                                                 {discussion.enable_likes && (
-                                                    <button className={styles.likeButton}>+{review.nof_likes}</button>)}
+                                                    <button onClick={() => likeProCon(review.id)}
+                                                            className={styles.likeButton}>+{review.nof_likes}</button>)}
                                             </div>
                                         </div>
                                         <div className={styles.votingDates}>
@@ -315,7 +350,7 @@ const DiscussionPage: React.FC = () => {
                                         </div>
                                     </div>
                                 ))}
-                            </>
+                            </div>
                         ))}
                     </div>
                 </>
