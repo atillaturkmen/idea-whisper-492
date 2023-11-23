@@ -221,10 +221,11 @@ const DiscussionPage: React.FC = () => {
                                 </div>
                             )}
                             <div>
-                                <button onClick={() => copyToClipboard(window.location.toString())}
-                                        className={styles.copyButton}>
-                                    Copy Admin Link
-                                </button>
+                                {discussion.is_admin &&
+                                    <button onClick={() => copyToClipboard(window.location.toString())}
+                                            className={styles.copyButton}>
+                                        Copy Admin Link
+                                    </button>}
                                 {
                                     discussion.VisitorLink.length > 0 &&
                                     <button
@@ -241,7 +242,7 @@ const DiscussionPage: React.FC = () => {
                                 </div>
                             )}
                         </div>
-                        {willBeVoted && (
+                        {(willBeVoted && discussion.is_admin) && (
                             <div className={styles.votingDates}>
                                 <button
                                     className={styles.editButton}>&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;Edit
@@ -257,12 +258,12 @@ const DiscussionPage: React.FC = () => {
                             <button onClick={toggleAddIdeaForm} className={styles.ideaEntryButton}>
                                 Add Idea
                             </button>
-                            <div>
+                            {discussion.is_admin && <div>
                                 <button>
                                     <BsTrash/>
                                 </button>
                                 <button className={styles.editButton}>Edit</button>
-                            </div>
+                            </div>}
                         </div>
                     </div>
                     <br/>
@@ -322,12 +323,12 @@ const DiscussionPage: React.FC = () => {
                                                     type="submit">Submit {isPro ? "Pro" : "Con"}</button>
                                         </form>
                                     )}
-                                    <div>
+                                    {(discussion.is_admin || user.userId == idea.created_by) ? <div>
                                         <button>
                                             <BsTrash/>
                                         </button>
                                         <button className={styles.editButton}>Edit</button>
-                                    </div>
+                                    </div> : <p>&#8203;</p>}
                                 </div>
                                 {mergeAndSortProsAndCons(idea).map((review: any) => (
                                     <div key={review.id}>
@@ -341,12 +342,12 @@ const DiscussionPage: React.FC = () => {
                                         </div>
                                         <div className={styles.votingDates}>
                                             <div></div>
-                                            <div>
+                                            {(discussion.is_admin || user.userId == review.created_by) ? <div>
                                                 <button>
                                                     <BsTrash/>
                                                 </button>
                                                 <button className={styles.editButton}>Edit</button>
-                                            </div>
+                                            </div> : <p>&#8203;</p>}
                                         </div>
                                     </div>
                                 ))}

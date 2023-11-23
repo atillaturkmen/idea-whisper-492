@@ -3,8 +3,6 @@ import {UserModel} from "@/local-storage/userModel";
 // Get the user data from local storage, or create a new user if none exists
 export function getUserData(link: string): UserModel {
     const userString = localStorage.getItem(link);
-    console.log(userString);
-    console.log(link);
     if (userString) {
         const user = JSON.parse(userString);
         user.liked = new Set(user.liked);
