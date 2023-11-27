@@ -4,10 +4,18 @@ import prisma from "@/prisma";
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
     if (req.method === 'POST') {
         try {
-            const {topic, startDate, endDate, allowVoteVisibility, allowMultipleSelections, maxSelections} = req.body;
+            const {
+                topic,
+                startDate,
+                endDate,
+                allowVoteVisibility,
+                allowMultipleSelections,
+                maxSelections,
+                enableLikes,
+            } = req.body;
 
             if (topic == null || allowVoteVisibility == null || allowMultipleSelections == null || maxSelections == null
-                || (startDate == null && endDate != null) || (startDate != null && endDate == null)) {
+                || (startDate == null && endDate != null) || (startDate != null && endDate == null) || enableLikes == null) {
                 return res.status(400).json({
                     success: false,
                     error: 'Missing required parameters',
@@ -55,6 +63,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                     max_nof_selections: maxSelections,
                     will_be_voted: allowMultipleSelections,
                     admin_link: randomAdminLink,
+                    enable_likes: enableLikes,
                     VisitorLink: {
                         create: {
                             link: randomVisitorLink,

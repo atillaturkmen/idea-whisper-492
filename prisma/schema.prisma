@@ -15,6 +15,7 @@ model DiscussionPost {
   admin_link                    String        @db.VarChar(255)
   topic_edit_date               DateTime?     @map("topic_edit_date")
   will_be_voted                 Boolean       @map("will_be_voted")
+  enable_likes                 Boolean       @map("enable_likes")
   vote_start_date               DateTime?     @map("vote_start_date")
   vote_end_date                 DateTime?     @map("vote_end_date")
   VisitorLink                   VisitorLink[]

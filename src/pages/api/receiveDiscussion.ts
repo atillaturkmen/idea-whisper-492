@@ -46,6 +46,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                 ...discussion,
                 is_admin: false,
             };
+            delete newDiscussion.admin_link;
             return res.status(200).json(newDiscussion);
         }
         const newDiscussion = {

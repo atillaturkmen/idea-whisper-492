@@ -11,7 +11,8 @@ const PostCreation: React.FC = () => {
     const [endDate, setEndDate] = useState<Date | null>(null);
     const [allowVoteVisibility, setAllowVoteVisibility] = useState(false);
     const [allowMultipleSelections, setAllowMultipleSelections] = useState(false);
-    const [willBeVoted, setwillBeVoted] = useState(false);
+    const [willBeVoted, setWillBeVoted] = useState(false);
+    const [enableLikes, setEnableLikes] = useState(false);
     const [maxSelections, setMaxSelections] = useState(1);
     const router = useRouter();
 
@@ -25,7 +26,8 @@ const PostCreation: React.FC = () => {
                 endDate,
                 allowVoteVisibility,
                 allowMultipleSelections,
-                maxSelections
+                maxSelections,
+                enableLikes,
             })
         });
 
@@ -53,7 +55,7 @@ const PostCreation: React.FC = () => {
             <div>
                 <label>
                     <input type="checkbox" checked={willBeVoted}
-                           onChange={() => setwillBeVoted(prev => !prev)}/>
+                           onChange={() => setWillBeVoted(prev => !prev)}/>
                     Discussion will be voted
                 </label>
             </div>
@@ -95,6 +97,14 @@ const PostCreation: React.FC = () => {
                     <input type="checkbox" checked={allowVoteVisibility}
                            onChange={() => setAllowVoteVisibility(prev => !prev)}/>
                     Allow everyone to see the votes during voting
+                </label>
+            </div>
+
+            <div>
+                <label>
+                    <input type="checkbox" checked={enableLikes}
+                           onChange={() => setEnableLikes(prev => !prev)}/>
+                    Enable likes on pros and cons
                 </label>
             </div>
 
