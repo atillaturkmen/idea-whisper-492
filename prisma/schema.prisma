@@ -15,17 +15,26 @@ model DiscussionPost {
   admin_link                    String        @db.VarChar(255)
   topic_edit_date               DateTime?     @map("topic_edit_date")
   will_be_voted                 Boolean       @map("will_be_voted")
-  enable_likes                 Boolean       @map("enable_likes")
+  enable_likes                  Boolean       @map("enable_likes")
   vote_start_date               DateTime?     @map("vote_start_date")
   vote_end_date                 DateTime?     @map("vote_end_date")
-  VisitorLink                   VisitorLink[]
+  Group                         Group[]
   Idea                          Idea[]
+}
+
+model Group {
+  id               Int       @id @default(autoincrement())
+  name           String         @db.VarChar(255)
+  is_email       Boolean       @map("is_email")
+  idDiscussionPost Int
+  DiscussionPost DiscussionPost @relation(fields: [idDiscussionPost], references: [id], onDelete: Cascade)
+  VisitorLink     VisitorLink[]
 }
 
 model VisitorLink {
   link                String         @id @db.VarChar(255)
-  idDiscussionPost    Int
-  DiscussionPost      DiscussionPost @relation(fields: [idDiscussionPost], references: [id], onDelete: Cascade)
+  idGroup    Int
+  Group      Group @relation(fields: [idGroup], references: [id], onDelete: Cascade)
 }
 
 model Idea {
