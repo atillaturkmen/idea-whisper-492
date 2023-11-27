@@ -244,9 +244,9 @@ const DiscussionPage: React.FC = () => {
                         </div>
                         {(willBeVoted && discussion.is_admin) && (
                             <div className={styles.votingDates}>
-                                <button
+                                {!votingStarted ? <button
                                     className={styles.editButton}>&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;Edit
-                                </button>
+                                </button> : <p>&#8203;</p>}
                                 <button className={styles.editButton}>Edit</button>
                             </div>
                         )}
