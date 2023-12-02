@@ -14,20 +14,24 @@ const PostCreation: React.FC = () => {
     const [willBeVoted, setWillBeVoted] = useState(false);
     const [enableLikes, setEnableLikes] = useState(false);
     const [maxSelections, setMaxSelections] = useState(1);
+    const [groupNames, setGroupNames] = useState<string[]>([]);
+
     const router = useRouter();
 
     const handleSubmit = async () => {
+        const filteredGroupNames = groupNames.filter(element => element !== "");
         const response = await fetch('/api/createDiscussion', {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify({
-                topic: topic,
+                topic,
                 startDate,
                 endDate,
                 allowVoteVisibility,
                 allowMultipleSelections,
                 maxSelections,
                 enableLikes,
+                filteredGroupNames
             })
         });
 
@@ -37,6 +41,22 @@ const PostCreation: React.FC = () => {
         } else {
             alert(data.error);
         }
+    };
+
+    const handleGroupNameChange = (e: React.ChangeEvent<HTMLInputElement>, index: number) => {
+        const newGroupNames = [...groupNames];
+        newGroupNames[index] = e.target.value;
+        setGroupNames(newGroupNames);
+    };
+
+    const addGroupName = () => {
+        setGroupNames([...groupNames, '']);
+    };
+
+    const removeGroupName = (index: number) => {
+        const newGroupNames = [...groupNames];
+        newGroupNames.splice(index, 1);
+        setGroupNames(newGroupNames);
     };
 
     return (
@@ -123,6 +143,20 @@ const PostCreation: React.FC = () => {
                            onChange={(e) => setMaxSelections(Number(e.target.value))}/>
                 </div>
             )}
+
+            <div>
+                {groupNames.map((groupName, index) => (
+                    <div key={index}>
+                        <input
+                            type="text"
+                            value={groupName}
+                            onChange={(e) => handleGroupNameChange(e, index)}
+                        />
+                        <button className={buttonStyles.smallButton} onClick={() => removeGroupName(index)}>Remove</button>
+                    </div>
+                ))}
+                <button className={buttonStyles.smallButton} onClick={addGroupName}>Add Group Name</button>
+            </div>
             <br/>
 
             <button className={buttonStyles.button} onClick={handleSubmit}>Create Discussion</button>

@@ -201,6 +201,15 @@ const DiscussionPage: React.FC = () => {
         writeUserData(link, user);
     }
 
+    function copyVisitorLink() {
+        const selectBox:any = document.getElementById("visitor-links");
+        if (selectBox == null) {
+            return;
+        }
+        const selectedValue = selectBox.options[selectBox.selectedIndex].value;
+        copyToClipboard(selectedValue);
+    }
+
     return (
         <div>
             {discussion === null ? (
@@ -221,19 +230,26 @@ const DiscussionPage: React.FC = () => {
                                 </div>
                             )}
                             <div>
-                                {discussion.is_admin &&
+                                {discussion.is_admin ? <div>
                                     <button onClick={() => copyToClipboard(window.location.toString())}
                                             className={styles.copyButton}>
                                         Copy Admin Link
-                                    </button>}
-                                {
-                                    discussion.VisitorLink.length > 0 &&
-                                    <button
-                                        onClick={() => copyToClipboard(`${location.origin}/discussion-page?link=${discussion.VisitorLink[0].link}`)}
-                                        className={styles.copyButton}>
-                                        Copy Visitor Link
                                     </button>
-                                }
+                                    <label>
+                                        <select id="visitor-links" defaultValue={"s"} onChange={copyVisitorLink}>
+                                            <option value="s" disabled>Copy Visitor Link</option>
+                                            {discussion.Group.map((group: any) => (
+                                                <option key={group.id}
+                                                        value={`${location.origin}/discussion-page?link=${group.VisitorLink[0].link}`}>
+                                                    Copy Visitor Link for {group.name}
+                                                </option>
+                                            ))}
+                                        </select>
+                                    </label>
+                                </div> : <button onClick={() => copyToClipboard(window.location.toString())}
+                                                 className={styles.copyButton}>
+                                    Copy Visitor Link
+                                </button>}
                             </div>
                             {willBeVoted && (
                                 <div className={styles.dateContainer}>
@@ -244,9 +260,9 @@ const DiscussionPage: React.FC = () => {
                         </div>
                         {(willBeVoted && discussion.is_admin) && (
                             <div className={styles.votingDates}>
-                                <button
+                                {!votingStarted ? <button
                                     className={styles.editButton}>&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;Edit
-                                </button>
+                                </button> : <p>&#8203;</p>}
                                 <button className={styles.editButton}>Edit</button>
                             </div>
                         )}
