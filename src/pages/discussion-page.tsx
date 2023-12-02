@@ -226,7 +226,7 @@ const DiscussionPage: React.FC = () => {
                             {willBeVoted && (
                                 <div className={styles.dateContainer}>
                                     <span>Voting Start Date: <span
-                                        className={styles.startingDate}>{new Date(discussion.vote_start_date).toLocaleDateString()}</span></span>
+                                        className={styles.startingDate}>{new Date(discussion.vote_start_date).toLocaleString()}</span></span>
                                 </div>
                             )}
                             <div>
@@ -254,7 +254,7 @@ const DiscussionPage: React.FC = () => {
                             {willBeVoted && (
                                 <div className={styles.dateContainer}>
                                     <span>Voting End Date: <span
-                                        className={styles.endDate}>{new Date(discussion.vote_end_date).toLocaleDateString()}</span></span>
+                                        className={styles.endDate}>{new Date(discussion.vote_end_date).toLocaleString()}</span></span>
                                 </div>
                             )}
                         </div>

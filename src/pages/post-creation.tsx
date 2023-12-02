@@ -93,6 +93,9 @@ const PostCreation: React.FC = () => {
                             className={styles_page.datePicker}
                             selectsStart
                             minDate={new Date()}
+                            showTimeSelect={true}
+                            timeIntervals={15}
+                            timeFormat="HH:mm"
                         />
                     </div>
 
@@ -107,6 +110,9 @@ const PostCreation: React.FC = () => {
                             className={styles_page.datePicker}
                             selectsEnd
                             minDate={new Date()}
+                            showTimeSelect={true}
+                            timeIntervals={15}
+                            timeFormat="HH:mm"
                         />
                     </div>
                 </div>
