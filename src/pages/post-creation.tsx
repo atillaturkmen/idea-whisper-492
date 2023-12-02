@@ -93,6 +93,9 @@ const PostCreation: React.FC = () => {
                             className={styles_page.datePicker}
                             selectsStart
                             minDate={new Date()}
+                            showTimeSelect={true}
+                            timeIntervals={15}
+                            timeFormat="HH:mm"
                         />
                     </div>
 
@@ -107,6 +110,9 @@ const PostCreation: React.FC = () => {
                             className={styles_page.datePicker}
                             selectsEnd
                             minDate={new Date()}
+                            showTimeSelect={true}
+                            timeIntervals={15}
+                            timeFormat="HH:mm"
                         />
                     </div>
                 </div>
@@ -144,7 +150,7 @@ const PostCreation: React.FC = () => {
                 </div>
             )}
 
-            <div>
+            {willBeVoted && <div>
                 {groupNames.map((groupName, index) => (
                     <div key={index}>
                         <input
@@ -156,7 +162,7 @@ const PostCreation: React.FC = () => {
                     </div>
                 ))}
                 <button className={buttonStyles.smallButton} onClick={addGroupName}>Add Group Name</button>
-            </div>
+            </div>}
             <br/>
 
             <button className={buttonStyles.button} onClick={handleSubmit}>Create Discussion</button>

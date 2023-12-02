@@ -72,6 +72,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                 });
             }
 
+            // if no groups were selected, create a default group
+            if (randomVisitorLinks.length === 0) {
+                randomVisitorLinks.push({
+                    link: generateRandomLink(255),
+                    group_name: "default",
+                });
+            }
+
             await prisma.discussionPost.create({
                 data: {
                     topic: topic,
