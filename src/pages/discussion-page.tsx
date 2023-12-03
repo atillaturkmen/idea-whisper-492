@@ -5,11 +5,15 @@ import {useEffect} from "react";
 import {BsTrash} from 'react-icons/bs';
 import styles from '../styles/DiscussionPage.module.css';
 import {getUserData, writeUserData} from "@/local-storage/userUtils";
+import { max } from "date-fns";
+import buttonStyles from '../styles/Button.module.css';
+
 
 const DiscussionPage: React.FC = () => {
     const [votingNotice, setVotingNotice] = useState<string | null>(null);
     const [willBeVoted, setWillBeVoted] = useState(true);
     const [votingStarted, setVotingStarted] = useState(false);
+    const [votingEnded, setVotingEnded] = useState(false);
     const [discussion, setDiscussion] = useState<any>(null);
     const [showAddIdeaForm, setShowAddIdeaForm] = useState<boolean>(false);
     const [newIdeaText, setNewIdeaText] = useState<string>('');
@@ -19,7 +23,8 @@ const DiscussionPage: React.FC = () => {
     const [isPro, setIsPro] = useState<boolean>(true);
     const [user, setUser] = useState<any>(null);
     const [link, setLink] = useState<string>("");
-
+    const [maxNumOfVoting, setMaxNumOfVoting] = useState<number>(0);
+    const [checkboxes, setCheckboxes] = useState<string[]>([]);
     const router = useRouter();
 
     const handleReceiveDiscussion = async (link: string) => {
@@ -33,12 +38,15 @@ const DiscussionPage: React.FC = () => {
         if (discussion) {
             const startDate = discussion.vote_start_date;
             const endDate = discussion.vote_end_date;
+            setMaxNumOfVoting(discussion.max_nof_selections);
             if (startDate && endDate) {
                 const now = new Date();
                 const remainingTimeUntilStart = Date.parse(startDate.toString()) - now.getTime();
                 const remainingTimeUntilEnd = Date.parse(endDate.toString()) - now.getTime();
                 if (remainingTimeUntilEnd < 0) {
                     setVotingNotice(`!!Voting Closed!!`);
+                    setVotingStarted(true);
+                    setVotingEnded(true);
                 } else if (remainingTimeUntilStart < 0) {
                     setVotingNotice(`!!Voting Started!!`);
                     setVotingStarted(true);
@@ -210,6 +218,40 @@ const DiscussionPage: React.FC = () => {
         copyToClipboard(selectedValue);
     }
 
+    const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>, ideaId: string) => {
+        const isChecked = e.target.checked;
+        console.log(maxNumOfVoting);
+        if (isChecked && checkboxes.length >= maxNumOfVoting) {
+          return; // Do not allow checking more checkboxes than maxNumOfVoting
+        }
+      
+        if (isChecked) {
+          setCheckboxes([...checkboxes, ideaId]);
+        } else {
+          setCheckboxes(checkboxes.filter((id) => id !== ideaId));
+        }
+        console.log(checkboxes);
+      };
+
+      const handleSubmit = async () => {
+        try {
+            const response = await fetch('/api/sendVote', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({votedIdeaIds: checkboxes})
+            });
+            const data = await response.json();
+            if (data.success) {
+                user.hasVoted = true;
+            } else {
+                console.log('Error submitting vote');
+            }
+        } catch (error) {
+            console.error('Error submitting vote:');
+        }
+
+      };
+
     return (
         <div>
             {discussion === null ? (
@@ -270,21 +312,23 @@ const DiscussionPage: React.FC = () => {
                         <div className={styles.ideaWhisperGoal}>
                             <p>{discussion.topic}</p>
                         </div>
-                        <div className={styles.votingDates}>
-                            <button onClick={toggleAddIdeaForm} className={styles.ideaEntryButton}>
-                                Add Idea
-                            </button>
-                            {discussion.is_admin && <div>
-                                <button>
-                                    <BsTrash/>
+                        {(!votingStarted)?
+                            <div className={styles.votingDates}>
+                                <button onClick={toggleAddIdeaForm} className={styles.ideaEntryButton}>
+                                    Add Idea
                                 </button>
-                                <button className={styles.editButton}>Edit</button>
-                            </div>}
-                        </div>
+                                {discussion.is_admin && <div>
+                                    <button>
+                                        <BsTrash/>
+                                    </button>
+                                    <button className={styles.editButton}>Edit</button>
+                                </div>}
+                            </div>
+                            : <p>&#8203;</p>}
                     </div>
                     <br/>
                     <div className={styles.bottomContainer}>
-                        {showAddIdeaForm && (
+                        {!votingStarted && showAddIdeaForm && (
                             <form onSubmit={(e) => {
                                 e.preventDefault();
                                 submitNewIdea();
@@ -303,27 +347,40 @@ const DiscussionPage: React.FC = () => {
                         )}
                         {discussion.Idea.map((idea: any) => (
                             <div key={idea.id}>
-                                <div className={styles.ideaBox}>
-                                    <div className={styles.votingDates}>
-                                        <p>{idea.text_body}</p>
-                                    </div>
-                                </div>
-                                <div className={styles.votingDates}>
+                                {(votingStarted) ? (
                                     <div>
-                                        <button onClick={() => {
-                                            toggleAddProConForm();
-                                            setNewProConIdeaId(idea.id);
-                                            setIsPro(true);
-                                        }} className={styles.addProText}>Add pro
-                                        </button>
-                                        <button onClick={() => {
-                                            toggleAddProConForm();
-                                            setNewProConIdeaId(idea.id);
-                                            setIsPro(false);
-                                        }} className={styles.addConText}>Add con
-                                        </button>
+                                        <input
+                                            type="checkbox"
+                                            checked={checkboxes.includes(idea.id)}
+                                            onChange={(e) => handleCheckboxChange(e, idea.id)}
+                                        />
+                                        <div className={styles.ideaBox}>
+                                            <div className={styles.votingDates}>
+                                                <p>{idea.text_body}</p>
+                                            </div>
+                                        </div>
                                     </div>
-                                    {(showAddProConForm && idea.id == newProConIdeaId) && (
+                                ) : (
+                                    <p>&#8203;</p>
+                                )}
+                                <div className={styles.votingDates}>
+                                    {(!votingStarted)?
+                                        <div>
+                                            <button onClick={() => {
+                                                toggleAddProConForm();
+                                                setNewProConIdeaId(idea.id);
+                                                setIsPro(true);
+                                            }} className={styles.addProText}>Add pro
+                                            </button>
+                                            <button onClick={() => {
+                                                toggleAddProConForm();
+                                                setNewProConIdeaId(idea.id);
+                                                setIsPro(false);
+                                            }} className={styles.addConText}>Add con
+                                            </button>
+                                        </div>
+                                    : <p>&#8203;</p>}
+                                    {(!votingStarted && showAddProConForm && idea.id == newProConIdeaId) && (
                                         <form onSubmit={(e) => {
                                             e.preventDefault();
                                             submitNewProCon();
@@ -339,7 +396,7 @@ const DiscussionPage: React.FC = () => {
                                                     type="submit">Submit {isPro ? "Pro" : "Con"}</button>
                                         </form>
                                     )}
-                                    {(discussion.is_admin || user.userId == idea.created_by) ? <div>
+                                    {(!votingStarted && (discussion.is_admin || user.userId == idea.created_by) )? <div>
                                         <button>
                                             <BsTrash/>
                                         </button>
@@ -358,7 +415,7 @@ const DiscussionPage: React.FC = () => {
                                         </div>
                                         <div className={styles.votingDates}>
                                             <div></div>
-                                            {(discussion.is_admin || user.userId == review.created_by) ? <div>
+                                            {(!votingStarted && (discussion.is_admin || user.userId == review.created_by) )? <div>
                                                 <button>
                                                     <BsTrash/>
                                                 </button>
@@ -370,6 +427,13 @@ const DiscussionPage: React.FC = () => {
                             </div>
                         ))}
                     </div>
+                    {votingStarted && !votingEnded && (
+                    <div className={styles.submitButtonContainer}>
+                        <button onClick={handleSubmit} className={buttonStyles.button} disabled={user.hasVoted}>
+                        Submit
+                        </button>
+                    </div>
+                    )}
                 </>
             )}
         </div>
