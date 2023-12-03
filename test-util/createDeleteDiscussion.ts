@@ -7,6 +7,7 @@ export async function createDiscussion() {
                 topic: "topic",
                 vote_start_date: new Date(),
                 vote_end_date: new Date(),
+                enable_likes: true,
                 can_see_votes_during_voting: true,
                 max_nof_selections: 3,
                 will_be_voted: true,

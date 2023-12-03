@@ -20,7 +20,8 @@
     "react-datepicker": "^4.21.0",
     "react-dom": "^18",
     "react-icons": "^4.11.0",
-    "react-modal": "^3.16.1"
+    "react-modal": "^3.16.1",
+    "shark": "^2.3.0"
   },
   "devDependencies": {
     "@types/jest": "^29.5.8",
