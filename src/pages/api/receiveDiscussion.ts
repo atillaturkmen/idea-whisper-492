@@ -15,7 +15,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                         Con: true,
                     }
                 },
-                VisitorLink: true,
+                Group: {
+                    include: {
+                        VisitorLink: true,
+                    }
+                },
             }
         });
 
@@ -28,22 +32,31 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             if (!visitor_link) {
                 return res.status(404).json(discussion);
             }
-            discussion = await prisma.discussionPost.findFirst({
+            const group = await prisma.group.findFirst({
                 where: {
-                    id: visitor_link.idDiscussionPost
+                    id: visitor_link.idGroup
                 },
                 include: {
-                    Idea: {
+                    DiscussionPost: {
                         include: {
-                            Pro: true,
-                            Con: true,
+                            Idea: {
+                                include: {
+                                    Pro: true,
+                                    Con: true,
+                                }
+                            }
                         }
                     },
                     VisitorLink: true,
                 }
             });
-            const newDiscussion = {
-                ...discussion,
+            if (!group) {
+                return res.status(404).json(discussion);
+            }
+            const visitorDiscussion = group.DiscussionPost;
+            const newDiscussion:any = {
+                ...visitorDiscussion,
+                VisitorLink: [{link: link}],
                 is_admin: false,
             };
             delete newDiscussion.admin_link;
@@ -53,11 +66,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             ...discussion,
             is_admin: true,
         };
-
-        // don't send visitor links if email method is used
-        if (newDiscussion.VisitorLink.length > 1) {
-            newDiscussion.VisitorLink = [];
-        }
 
         return res.status(200).json(newDiscussion);
     }
