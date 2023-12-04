@@ -23,6 +23,24 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             }
         });
 
+        //votes_per_day is an array of the number of votes that have different vote_date values
+
+        if (discussion) {
+            let votes_per_day = await prisma.vote.findMany({
+              where: {
+                idDiscussionPost: discussion.idDiscussionPost,
+              },
+              select: {
+                date: true,
+              },
+              groupBy: ['date'],
+              _count: {
+                date: true,
+                as: 'count',
+              },
+            });
+          }
+
         if (!discussion) {
             let visitor_link = await prisma.visitorLink.findFirst({
                 where: {
@@ -58,6 +76,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                 ...visitorDiscussion,
                 VisitorLink: [{link: link}],
                 is_admin: false,
+                votes_per_day: [0,1,2],
             };
             delete newDiscussion.admin_link;
             return res.status(200).json(newDiscussion);
@@ -65,6 +84,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         const newDiscussion = {
             ...discussion,
             is_admin: true,
+            votes_per_day: [5,1,2],
         };
 
         return res.status(200).json(newDiscussion);

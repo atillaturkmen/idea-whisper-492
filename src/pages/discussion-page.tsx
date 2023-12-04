@@ -5,8 +5,82 @@ import {useEffect} from "react";
 import {BsTrash} from 'react-icons/bs';
 import styles from '../styles/DiscussionPage.module.css';
 import {getUserData, writeUserData} from "@/local-storage/userUtils";
-import { max } from "date-fns";
+import { max, set } from "date-fns";
 import buttonStyles from '../styles/Button.module.css';
+import Chart from 'chart.js/auto';import { useRef } from 'react';
+
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+
+interface VoteChartProps {
+    votesPerDay: number[];
+    voteStartDate: string;
+    voteEndDate: string;
+  }
+  
+  const VoteChart: React.FC<VoteChartProps> = ({ votesPerDay, voteStartDate, voteEndDate }) => {
+    const chartRef = useRef<HTMLCanvasElement | null>(null);
+  
+    useEffect(() => {
+      const ctx = chartRef.current?.getContext('2d');
+  
+      // Calculate the number of days between voteStartDate and voteEndDate
+      const startDate = new Date(voteStartDate).getTime();
+      const endDate = new Date(voteEndDate).getTime();
+      const days = Math.floor((endDate - startDate) / (1000 * 60 * 60 * 24));
+  
+      // Create an array of labels representing each day
+      const labels = Array.from({ length: days + 1 }, (_, index) => {
+        const date = new Date(startDate);
+        date.setDate(date.getDate() + index);
+        return date.toLocaleDateString();
+      });
+  
+      // Create the chart
+      if (!ctx) {
+        return;
+      }
+      new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: labels,
+          datasets: [
+            {
+              label: 'Votes per Day',
+              data: votesPerDay,
+              backgroundColor: 'rgba(75, 192, 192, 0.2)',
+              borderColor: 'rgba(75, 192, 192, 1)',
+              borderWidth: 1,
+            },
+          ],
+        },
+        options: {
+          responsive: true,
+          scales: {
+            x: {
+              display: true,
+              title: {
+                display: true,
+                text: 'Date',
+              },
+            },
+            y: {
+              display: true,
+              title: {
+                display: true,
+                text: 'Votes',
+              },
+              ticks: {
+                precision: 0,
+              },
+            },
+          },
+        },
+      });
+    }, [votesPerDay, voteStartDate, voteEndDate]);
+  
+    return <canvas ref={chartRef} />;
+  };
 
 
 const DiscussionPage: React.FC = () => {
@@ -25,6 +99,8 @@ const DiscussionPage: React.FC = () => {
     const [link, setLink] = useState<string>("");
     const [maxNumOfVoting, setMaxNumOfVoting] = useState<number>(0);
     const [checkboxes, setCheckboxes] = useState<string[]>([]);
+    const [votesPerDay, setVotesPerDay] = useState<number[]>([]);
+    const [seeVotes, setSeeVotes] = useState<boolean>(false);
     const router = useRouter();
 
     const handleReceiveDiscussion = async (link: string) => {
@@ -39,6 +115,8 @@ const DiscussionPage: React.FC = () => {
             const startDate = discussion.vote_start_date;
             const endDate = discussion.vote_end_date;
             setMaxNumOfVoting(discussion.max_nof_selections);
+            setSeeVotes(discussion.can_see_votes_during_voting);
+            setVotesPerDay(discussion.votes_per_day);
             if (startDate && endDate) {
                 const now = new Date();
                 const remainingTimeUntilStart = Date.parse(startDate.toString()) - now.getTime();
@@ -230,11 +308,16 @@ const DiscussionPage: React.FC = () => {
         } else {
           setCheckboxes(checkboxes.filter((id) => id !== ideaId));
         }
-        console.log(checkboxes);
       };
 
       const handleSubmit = async () => {
         try {
+            if(user.hasVoted) {
+                toast.error('You have already voted!', {
+                  position: toast.POSITION.TOP_RIGHT,
+                });
+                return;
+            }
             const response = await fetch('/api/sendVote', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
@@ -243,6 +326,10 @@ const DiscussionPage: React.FC = () => {
             const data = await response.json();
             if (data.success) {
                 user.hasVoted = true;
+                console.log(user.hasVoted);
+                toast.success('Voted successfully!', {
+                    position: toast.POSITION.TOP_RIGHT,
+                  });
             } else {
                 console.log('Error submitting vote');
             }
@@ -434,6 +521,13 @@ const DiscussionPage: React.FC = () => {
                         </button>
                     </div>
                     )}
+                    {(votingStarted && seeVotes) ?
+                          <VoteChart
+                          votesPerDay={votesPerDay}
+                          voteStartDate={discussion.vote_start_date}
+                          voteEndDate={discussion.vote_end_date}
+                        /> : <p>&#8203;</p>}
+
                 </>
             )}
         </div>
