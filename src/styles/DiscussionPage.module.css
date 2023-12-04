@@ -177,3 +177,9 @@
     box-sizing: border-box; /* Box sizing to include padding in width/height */
     resize: vertical; /* Allow only vertical resizing */
 }
+
+.submitButtonContainer {
+    display: flex;
+    justify-content: center;
+    margin-top: 20px; /* Adjust the margin as needed */
+  }
