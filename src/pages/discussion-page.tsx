@@ -360,13 +360,13 @@ const DiscussionPage: React.FC = () => {
                             )}
                             <div>
                                 {discussion.is_admin ? <div>
-                                    <button onClick={() => copyToClipboard(window.location.toString())}
-                                            className={styles.copyButton}>
-                                        Copy Admin Link
-                                    </button>
                                     <label>
                                         <select id="visitor-links" defaultValue={"s"} onChange={copyVisitorLink}>
-                                            <option value="s" disabled>Copy Visitor Link</option>
+                                            <option value="s" disabled>Copy Link</option>
+                                            <option key={"admin"}
+                                                    value={window.location.toString()}>
+                                                Copy Admin Link
+                                            </option>
                                             {discussion.Group.map((group: any) => (
                                                 <option key={group.id}
                                                         value={`${location.origin}/discussion-page?link=${group.VisitorLink[0].link}`}>
