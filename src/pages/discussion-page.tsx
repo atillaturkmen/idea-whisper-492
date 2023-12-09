@@ -441,15 +441,15 @@ const DiscussionPage: React.FC = () => {
                                             checked={checkboxes.includes(idea.id)}
                                             onChange={(e) => handleCheckboxChange(e, idea.id)}
                                         />
-                                        <div className={styles.ideaBox}>
-                                            <div className={styles.votingDates}>
-                                                <p>{idea.text_body}</p>
-                                            </div>
-                                        </div>
                                     </div>
                                 ) : (
                                     <p>&#8203;</p>
                                 )}
+                                <div className={styles.ideaBox}>
+                                    <div className={styles.votingDates}>
+                                        <p>{idea.text_body}</p>
+                                    </div>
+                                </div>
                                 <div className={styles.votingDates}>
                                     {(!votingStarted)?
                                         <div>
