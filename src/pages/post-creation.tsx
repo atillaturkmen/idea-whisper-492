@@ -134,13 +134,13 @@ const PostCreation: React.FC = () => {
                 </label>
             </div>
 
-            <div>
+            {willBeVoted && <div>
                 <label>
                     <input type="checkbox" checked={allowMultipleSelections}
                            onChange={() => setAllowMultipleSelections(prev => !prev)}/>
                     Allow multiple selections
                 </label>
-            </div>
+            </div>}
 
             {allowMultipleSelections && (
                 <div>
