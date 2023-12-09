@@ -326,7 +326,7 @@ const DiscussionPage: React.FC = () => {
             const data = await response.json();
             if (data.success) {
                 user.hasVoted = true;
-                console.log(user.hasVoted);
+                writeUserData(link, user);
                 toast.success('Voted successfully!', {
                     position: toast.POSITION.TOP_RIGHT,
                   });
@@ -516,7 +516,7 @@ const DiscussionPage: React.FC = () => {
                     </div>
                     {votingStarted && !votingEnded && (
                     <div className={styles.submitButtonContainer}>
-                        <button onClick={handleSubmit} className={buttonStyles.button} disabled={user.hasVoted}>
+                        <button onClick={handleSubmit} className={buttonStyles.button}>
                         Submit
                         </button>
                     </div>
