@@ -269,7 +269,12 @@ const DiscussionPage: React.FC = () => {
             });
             const data = await response.json();
             if (data.success) {
-                const link = router.query.link;
+                if (user.liked.has(proConId)) {
+                    user.liked.delete(proConId);
+                } else {
+                    user.liked.add(proConId);
+                }
+                writeUserData(link, user);
                 if (link) {
                     handleReceiveDiscussion(link as string);
                 }
@@ -279,12 +284,69 @@ const DiscussionPage: React.FC = () => {
         } catch (error) {
             console.error('Error while liking:', error);
         }
-        if (user.liked.has(proConId)) {
-            user.liked.delete(proConId);
-        } else {
-            user.liked.add(proConId);
+    }
+
+    async function deleteProCon(proConId: number) {
+        // alert to confirm deletion
+        if (!confirm("Are you sure you want to delete this?")) return;
+        try {
+            const url = "/api/deleteProCon";
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    proConId: proConId,
+                    userId: user.userId,
+                })
+            });
+            const data = await response.json();
+            if (data.success) {
+                if (user.writtenPros.has(proConId)) {
+                    user.writtenPros.delete(proConId);
+                }
+                if (user.writtenCons.has(proConId)) {
+                    user.writtenCons.delete(proConId);
+                }
+                writeUserData(link, user);
+                if (link) {
+                    handleReceiveDiscussion(link as string);
+                }
+            } else {
+                console.log('Error while deleting:', data);
+            }
+        } catch (error) {
+            console.error('Error while deleting:', error);
         }
-        writeUserData(link, user);
+    }
+
+    async function deleteIdea(ideaId: number) {
+        // alert to confirm deletion
+        if (!confirm("Are you sure you want to delete this idea?")) return;
+        try {
+            const url = "/api/deleteIdea";
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    ideaId: ideaId,
+                    userId: user.userId,
+                })
+            });
+            const data = await response.json();
+            if (data.success) {
+                if (user.writtenIdeas.has(ideaId)) {
+                    user.writtenPros.delete(ideaId);
+                }
+                writeUserData(link, user);
+                if (link) {
+                    handleReceiveDiscussion(link as string);
+                }
+            } else {
+                console.log('Error while deleting:', data);
+            }
+        } catch (error) {
+            console.error('Error while deleting:', error);
+        }
     }
 
     function copyVisitorLink() {
@@ -484,7 +546,7 @@ const DiscussionPage: React.FC = () => {
                                         </form>
                                     )}
                                     {(!votingStarted && (discussion.is_admin || user.userId == idea.created_by) )? <div>
-                                        <button>
+                                        <button onClick={() => deleteIdea(idea.id)}>
                                             <BsTrash/>
                                         </button>
                                         <button className={styles.editButton}>Edit</button>
@@ -503,7 +565,7 @@ const DiscussionPage: React.FC = () => {
                                         <div className={styles.votingDates}>
                                             <div></div>
                                             {(!votingStarted && (discussion.is_admin || user.userId == review.created_by) )? <div>
-                                                <button>
+                                                <button onClick={() => deleteProCon(review.id)}>
                                                     <BsTrash/>
                                                 </button>
                                                 <button className={styles.editButton}>Edit</button>
