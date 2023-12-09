@@ -25,6 +25,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
         //votes_per_day is an array of the number of votes that have different vote_date values
 
+        /**
         if (discussion) {
             let votes_per_day = await prisma.vote.findMany({
               where: {
@@ -40,6 +41,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
               },
             });
           }
+         */
 
         if (!discussion) {
             let visitor_link = await prisma.visitorLink.findFirst({
