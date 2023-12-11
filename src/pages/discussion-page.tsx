@@ -5,8 +5,82 @@ import {useEffect} from "react";
 import {BsTrash} from 'react-icons/bs';
 import styles from '../styles/DiscussionPage.module.css';
 import {getUserData, writeUserData} from "@/local-storage/userUtils";
-import { max } from "date-fns";
 import buttonStyles from '../styles/Button.module.css';
+import Chart from 'chart.js/auto';
+import {useRef} from 'react';
+
+import {toast} from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+
+interface VoteChartProps {
+    votesPerDay: number[];
+    voteStartDate: string;
+    voteEndDate: string;
+}
+
+const VoteChart: React.FC<VoteChartProps> = ({votesPerDay, voteStartDate, voteEndDate}) => {
+    const chartRef = useRef<HTMLCanvasElement | null>(null);
+
+    useEffect(() => {
+        const ctx = chartRef.current?.getContext('2d');
+
+        // Calculate the number of days between voteStartDate and voteEndDate
+        const startDate = new Date(voteStartDate).getTime();
+        const endDate = new Date(voteEndDate).getTime();
+        const days = Math.floor((endDate - startDate) / (1000 * 60 * 60 * 24));
+
+        // Create an array of labels representing each day
+        const labels = Array.from({length: days + 1}, (_, index) => {
+            const date = new Date(startDate);
+            date.setDate(date.getDate() + index);
+            return date.toLocaleDateString();
+        });
+
+        // Create the chart
+        if (!ctx) {
+            return;
+        }
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [
+                    {
+                        label: 'Votes per Day',
+                        data: votesPerDay,
+                        backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                        borderColor: 'rgba(75, 192, 192, 1)',
+                        borderWidth: 1,
+                    },
+                ],
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    x: {
+                        display: true,
+                        title: {
+                            display: true,
+                            text: 'Date',
+                        },
+                    },
+                    y: {
+                        display: true,
+                        title: {
+                            display: true,
+                            text: 'Votes',
+                        },
+                        ticks: {
+                            precision: 0,
+                        },
+                    },
+                },
+            },
+        });
+    }, [votesPerDay, voteStartDate, voteEndDate]);
+
+    return <canvas ref={chartRef}/>;
+};
 
 
 const DiscussionPage: React.FC = () => {
@@ -25,6 +99,8 @@ const DiscussionPage: React.FC = () => {
     const [link, setLink] = useState<string>("");
     const [maxNumOfVoting, setMaxNumOfVoting] = useState<number>(0);
     const [checkboxes, setCheckboxes] = useState<string[]>([]);
+    const [votesPerDay, setVotesPerDay] = useState<number[]>([]);
+    const [seeVotes, setSeeVotes] = useState<boolean>(false);
     const router = useRouter();
 
     const handleReceiveDiscussion = async (link: string) => {
@@ -39,6 +115,8 @@ const DiscussionPage: React.FC = () => {
             const startDate = discussion.vote_start_date;
             const endDate = discussion.vote_end_date;
             setMaxNumOfVoting(discussion.max_nof_selections);
+            setSeeVotes(discussion.can_see_votes_during_voting);
+            setVotesPerDay(discussion.votes_per_day);
             if (startDate && endDate) {
                 const now = new Date();
                 const remainingTimeUntilStart = Date.parse(startDate.toString()) - now.getTime();
@@ -191,7 +269,12 @@ const DiscussionPage: React.FC = () => {
             });
             const data = await response.json();
             if (data.success) {
-                const link = router.query.link;
+                if (user.liked.has(proConId)) {
+                    user.liked.delete(proConId);
+                } else {
+                    user.liked.add(proConId);
+                }
+                writeUserData(link, user);
                 if (link) {
                     handleReceiveDiscussion(link as string);
                 }
@@ -201,16 +284,73 @@ const DiscussionPage: React.FC = () => {
         } catch (error) {
             console.error('Error while liking:', error);
         }
-        if (user.liked.has(proConId)) {
-            user.liked.delete(proConId);
-        } else {
-            user.liked.add(proConId);
+    }
+
+    async function deleteProCon(proConId: number) {
+        // alert to confirm deletion
+        if (!confirm("Are you sure you want to delete this?")) return;
+        try {
+            const url = "/api/deleteProCon";
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    proConId: proConId,
+                    userId: user.userId,
+                })
+            });
+            const data = await response.json();
+            if (data.success) {
+                if (user.writtenPros.has(proConId)) {
+                    user.writtenPros.delete(proConId);
+                }
+                if (user.writtenCons.has(proConId)) {
+                    user.writtenCons.delete(proConId);
+                }
+                writeUserData(link, user);
+                if (link) {
+                    handleReceiveDiscussion(link as string);
+                }
+            } else {
+                console.log('Error while deleting:', data);
+            }
+        } catch (error) {
+            console.error('Error while deleting:', error);
         }
-        writeUserData(link, user);
+    }
+
+    async function deleteIdea(ideaId: number) {
+        // alert to confirm deletion
+        if (!confirm("Are you sure you want to delete this idea?")) return;
+        try {
+            const url = "/api/deleteIdea";
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    ideaId: ideaId,
+                    userId: user.userId,
+                })
+            });
+            const data = await response.json();
+            if (data.success) {
+                if (user.writtenIdeas.has(ideaId)) {
+                    user.writtenPros.delete(ideaId);
+                }
+                writeUserData(link, user);
+                if (link) {
+                    handleReceiveDiscussion(link as string);
+                }
+            } else {
+                console.log('Error while deleting:', data);
+            }
+        } catch (error) {
+            console.error('Error while deleting:', error);
+        }
     }
 
     function copyVisitorLink() {
-        const selectBox:any = document.getElementById("visitor-links");
+        const selectBox: any = document.getElementById("visitor-links");
         if (selectBox == null) {
             return;
         }
@@ -222,19 +362,24 @@ const DiscussionPage: React.FC = () => {
         const isChecked = e.target.checked;
         console.log(maxNumOfVoting);
         if (isChecked && checkboxes.length >= maxNumOfVoting) {
-          return; // Do not allow checking more checkboxes than maxNumOfVoting
+            return; // Do not allow checking more checkboxes than maxNumOfVoting
         }
-      
-        if (isChecked) {
-          setCheckboxes([...checkboxes, ideaId]);
-        } else {
-          setCheckboxes(checkboxes.filter((id) => id !== ideaId));
-        }
-        console.log(checkboxes);
-      };
 
-      const handleSubmit = async () => {
+        if (isChecked) {
+            setCheckboxes([...checkboxes, ideaId]);
+        } else {
+            setCheckboxes(checkboxes.filter((id) => id !== ideaId));
+        }
+    };
+
+    const handleSubmit = async () => {
         try {
+            if (user.hasVoted) {
+                toast.error('You have already voted!', {
+                    position: toast.POSITION.TOP_RIGHT,
+                });
+                return;
+            }
             const response = await fetch('/api/sendVote', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
@@ -243,6 +388,10 @@ const DiscussionPage: React.FC = () => {
             const data = await response.json();
             if (data.success) {
                 user.hasVoted = true;
+                writeUserData(link, user);
+                toast.success('Voted successfully!', {
+                    position: toast.POSITION.TOP_RIGHT,
+                });
             } else {
                 console.log('Error submitting vote');
             }
@@ -250,7 +399,7 @@ const DiscussionPage: React.FC = () => {
             console.error('Error submitting vote:');
         }
 
-      };
+    };
 
     return (
         <div>
@@ -273,13 +422,13 @@ const DiscussionPage: React.FC = () => {
                             )}
                             <div>
                                 {discussion.is_admin ? <div>
-                                    <button onClick={() => copyToClipboard(window.location.toString())}
-                                            className={styles.copyButton}>
-                                        Copy Admin Link
-                                    </button>
                                     <label>
                                         <select id="visitor-links" defaultValue={"s"} onChange={copyVisitorLink}>
-                                            <option value="s" disabled>Copy Visitor Link</option>
+                                            <option value="s" disabled>Copy Link</option>
+                                            <option key={"admin"}
+                                                    value={window.location.toString()}>
+                                                Copy Admin Link
+                                            </option>
                                             {discussion.Group.map((group: any) => (
                                                 <option key={group.id}
                                                         value={`${location.origin}/discussion-page?link=${group.VisitorLink[0].link}`}>
@@ -312,7 +461,7 @@ const DiscussionPage: React.FC = () => {
                         <div className={styles.ideaWhisperGoal}>
                             <p>{discussion.topic}</p>
                         </div>
-                        {(!votingStarted)?
+                        {(!votingStarted) ?
                             <div className={styles.votingDates}>
                                 <button onClick={toggleAddIdeaForm} className={styles.ideaEntryButton}>
                                     Add Idea
@@ -354,17 +503,17 @@ const DiscussionPage: React.FC = () => {
                                             checked={checkboxes.includes(idea.id)}
                                             onChange={(e) => handleCheckboxChange(e, idea.id)}
                                         />
-                                        <div className={styles.ideaBox}>
-                                            <div className={styles.votingDates}>
-                                                <p>{idea.text_body}</p>
-                                            </div>
-                                        </div>
                                     </div>
                                 ) : (
                                     <p>&#8203;</p>
                                 )}
+                                <div className={styles.ideaBox}>
+                                    <div className={styles.votingDates}>
+                                        <p>{idea.text_body}</p>
+                                    </div>
+                                </div>
                                 <div className={styles.votingDates}>
-                                    {(!votingStarted)?
+                                    {(!votingStarted) ?
                                         <div>
                                             <button onClick={() => {
                                                 toggleAddProConForm();
@@ -379,7 +528,7 @@ const DiscussionPage: React.FC = () => {
                                             }} className={styles.addConText}>Add con
                                             </button>
                                         </div>
-                                    : <p>&#8203;</p>}
+                                        : <p>&#8203;</p>}
                                     {(!votingStarted && showAddProConForm && idea.id == newProConIdeaId) && (
                                         <form onSubmit={(e) => {
                                             e.preventDefault();
@@ -396,8 +545,8 @@ const DiscussionPage: React.FC = () => {
                                                     type="submit">Submit {isPro ? "Pro" : "Con"}</button>
                                         </form>
                                     )}
-                                    {(!votingStarted && (discussion.is_admin || user.userId == idea.created_by) )? <div>
-                                        <button>
+                                    {(!votingStarted && (discussion.is_admin || user.userId == idea.created_by)) ? <div>
+                                        <button onClick={() => deleteIdea(idea.id)}>
                                             <BsTrash/>
                                         </button>
                                         <button className={styles.editButton}>Edit</button>
@@ -415,12 +564,13 @@ const DiscussionPage: React.FC = () => {
                                         </div>
                                         <div className={styles.votingDates}>
                                             <div></div>
-                                            {(!votingStarted && (discussion.is_admin || user.userId == review.created_by) )? <div>
-                                                <button>
-                                                    <BsTrash/>
-                                                </button>
-                                                <button className={styles.editButton}>Edit</button>
-                                            </div> : <p>&#8203;</p>}
+                                            {(!votingStarted && (discussion.is_admin || user.userId == review.created_by)) ?
+                                                <div>
+                                                    <button onClick={() => deleteProCon(review.id)}>
+                                                        <BsTrash/>
+                                                    </button>
+                                                    <button className={styles.editButton}>Edit</button>
+                                                </div> : <p>&#8203;</p>}
                                         </div>
                                     </div>
                                 ))}
@@ -428,12 +578,19 @@ const DiscussionPage: React.FC = () => {
                         ))}
                     </div>
                     {votingStarted && !votingEnded && (
-                    <div className={styles.submitButtonContainer}>
-                        <button onClick={handleSubmit} className={buttonStyles.button} disabled={user.hasVoted}>
-                        Submit
-                        </button>
-                    </div>
+                        <div className={styles.submitButtonContainer}>
+                            <button onClick={handleSubmit} className={buttonStyles.button}>
+                                Submit
+                            </button>
+                        </div>
                     )}
+                    {(votingStarted && discussion.is_admin) ?
+                        <VoteChart
+                            votesPerDay={votesPerDay}
+                            voteStartDate={discussion.vote_start_date}
+                            voteEndDate={discussion.vote_end_date}
+                        /> : <p>&#8203;</p>}
+
                 </>
             )}
         </div>
