@@ -87,7 +87,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                     vote_end_date: endDate,
                     can_see_votes_during_voting: allowVoteVisibility,
                     max_nof_selections: maxSelections,
-                    will_be_voted: allowMultipleSelections,
+                    will_be_voted: startDate != null,
                     admin_link: randomAdminLink,
                     enable_likes: enableLikes,
                     Group: {

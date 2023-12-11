@@ -78,15 +78,49 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                 ...visitorDiscussion,
                 VisitorLink: [{link: link}],
                 is_admin: false,
-                votes_per_day: [0,1,2],
+                votes_per_day: [], // don't give the visitor vote graph data
             };
             delete newDiscussion.admin_link;
             return res.status(200).json(newDiscussion);
         }
+        // get votes per day
+        let votes_per_day:Array<number> = [];
+        const startDate = discussion.vote_start_date;
+        const endDate = discussion.vote_end_date;
+        if (startDate != null && endDate != null) {
+            const voteCounts = await prisma.vote.groupBy({
+                by: ['vote_date'],
+                _count: {
+                    id: true,
+                },
+                where: {
+                    Idea: {
+                        idDiscussionPost: discussion.id,
+                    },
+                },
+                orderBy: {
+                    vote_date: 'asc',
+                }
+            });
+            type VoteCountMap = { [key: string]: number };
+            const voteCountMap: VoteCountMap = voteCounts.reduce((map, vote) => {
+                const dateKey = vote.vote_date.toISOString().split('T')[0];
+                map[dateKey] = vote._count.id;
+                return map;
+            }, {} as VoteCountMap);
+
+            // Generate an array for each day in the range
+            let currentDate = new Date(startDate);
+            while (currentDate <= endDate) {
+                const dateKey = currentDate.toISOString().split('T')[0];
+                votes_per_day.push(voteCountMap[dateKey] || 0);
+                currentDate.setDate(currentDate.getDate() + 1);
+            }
+        }
         const newDiscussion = {
             ...discussion,
             is_admin: true,
-            votes_per_day: [5,1,2],
+            votes_per_day: votes_per_day,
         };
 
         return res.status(200).json(newDiscussion);

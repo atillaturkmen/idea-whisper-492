@@ -584,7 +584,7 @@ const DiscussionPage: React.FC = () => {
                             </button>
                         </div>
                     )}
-                    {(votingStarted && seeVotes) ?
+                    {(votingStarted && discussion.is_admin) ?
                         <VoteChart
                             votesPerDay={votesPerDay}
                             voteStartDate={discussion.vote_start_date}
