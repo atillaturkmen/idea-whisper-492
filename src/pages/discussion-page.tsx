@@ -102,6 +102,8 @@ const DiscussionPage: React.FC = () => {
     const [votesPerDay, setVotesPerDay] = useState<number[]>([]);
     const [editingProConId, setEditingProConId] = useState<number | null>(null);
     const [editingProConText, setEditingProConText] = useState<string>('');
+    const [editingIdeaId, setEditingIdeaId] = useState<number | null>(null);
+    const [editingIdeaText, setEditingIdeaText] = useState<string>('');
     const router = useRouter();
 
     const handleReceiveDiscussion = async (link: string) => {
@@ -207,6 +209,47 @@ const DiscussionPage: React.FC = () => {
         }
         setEditingProConId(null);
         setEditingProConText('');
+    };
+
+    // Function to toggle the edit idea form
+    const toggleEditIdeaForm = (ideaId: number, currentText: string) => {
+        setEditingIdeaId(ideaId);
+        setEditingIdeaText(currentText);
+    };
+
+    // Function to handle edit idea form input change
+    const handleEditIdeaInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+        setEditingIdeaText(e.target.value);
+    };
+
+    // Function to submit the edited idea
+    const submitEditIdea = async () => {
+        try {
+            const newIdea = {
+                ideaId: editingIdeaId,
+                userId: user.userId,
+                newIdeaBody: editingIdeaText,
+            };
+            let url: string = "/api/editIdea";
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(newIdea)
+            });
+            const data = await response.json();
+            if (data.success) {
+                const link = router.query.link;
+                if (link) {
+                    handleReceiveDiscussion(link as string);
+                }
+            } else {
+                console.log('Error editing idea:', data);
+            }
+        } catch (error) {
+            console.error('Error editing idea:', error);
+        }
+        setEditingIdeaId(null);
+        setEditingIdeaText('');
     };
 
     const copyToClipboard = (text: string) => {
@@ -586,12 +629,31 @@ const DiscussionPage: React.FC = () => {
                                                     type="submit">Submit {isPro ? "Pro" : "Con"}</button>
                                         </form>
                                     )}
-                                    {(!votingStarted && (discussion.is_admin || user.userId == idea.created_by)) ? <div>
-                                        <button onClick={() => deleteIdea(idea.id)}>
-                                            <BsTrash/>
-                                        </button>
-                                        <button className={styles.editButton}>Edit</button>
-                                    </div> : <p>&#8203;</p>}
+                                    {editingIdeaId === idea.id ? (
+                                        <form onSubmit={(e) => {
+                                            e.preventDefault();
+                                            submitEditIdea();
+                                        }}>
+                                            <textarea
+                                                value={editingIdeaText}
+                                                onChange={handleEditIdeaInputChange}
+                                                rows={4}
+                                                cols={50}
+                                            />
+                                            <button type="submit">Save Changes</button>
+                                        </form>
+                                    ) : <div>
+                                        {(!votingStarted && (discussion.is_admin || user.userId == idea.created_by)) ? <div>
+                                            <button onClick={() => deleteIdea(idea.id)}>
+                                                <BsTrash/>
+                                            </button>
+                                            <button
+                                                className={styles.editButton}
+                                                onClick={() => toggleEditIdeaForm(idea.id, idea.text_body)}>
+                                                Edit
+                                            </button>
+                                        </div> : <p>&#8203;</p>}
+                                    </div>}
                                 </div>
                                 {mergeAndSortProsAndCons(idea).map((review: any) => (
                                     <div key={review.id}>
