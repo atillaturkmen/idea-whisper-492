@@ -41,7 +41,7 @@ const VoteChart: React.FC<VoteChartProps> = ({votesPerDay, voteStartDate, voteEn
             return;
         }
         new Chart(ctx, {
-            type: 'line',
+            type: 'bar',
             data: {
                 labels: labels,
                 datasets: [
