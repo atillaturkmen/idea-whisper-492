@@ -477,6 +477,32 @@ const DiscussionPage: React.FC = () => {
         }
     }
 
+    async function deleteDiscussion() {
+        // alert to confirm deletion
+        if (!confirm("Are you sure you want to delete this discussion?")) return;
+        try {
+            const url = "/api/deleteDiscussion";
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    discussionId: discussion.id,
+                    admin_link: link,
+                })
+            });
+            const data = await response.json();
+            if (data.success) {
+                if (link) {
+                    handleReceiveDiscussion(link as string);
+                }
+            } else {
+                console.log('Error while deleting:', data);
+            }
+        } catch (error) {
+            console.error('Error while deleting:', error);
+        }
+    }
+
     function copyVisitorLink() {
         const selectBox: any = document.getElementById("visitor-links");
         if (selectBox == null) {
@@ -609,7 +635,7 @@ const DiscussionPage: React.FC = () => {
                                             <button type="submit">Save Changes</button>
                                         </form>
                                     </div> : <div>
-                                        <button>
+                                        <button onClick={deleteDiscussion}>
                                             <BsTrash/>
                                         </button>
                                         <button className={styles.editButton} onClick={toggleEditTopicForm}>Edit</button>
