@@ -161,7 +161,7 @@ const PostCreation: React.FC = () => {
                         <button className={buttonStyles.smallButton} onClick={() => removeGroupName(index)}>Remove</button>
                     </div>
                 ))}
-                <button className={buttonStyles.smallButton} onClick={addGroupName}>Add Group Name</button>
+                <button className={buttonStyles.smallButton} onClick={addGroupName}>Add Focus Group Name</button>
             </div>}
             <br/>
 
