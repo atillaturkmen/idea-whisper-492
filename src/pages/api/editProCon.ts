@@ -4,7 +4,7 @@ import prisma from "@/prisma";
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
     if (req.method === 'POST') {
         try {
-            const {proConId, userId, newProConBody} = req.body;
+            const {proConId, userId, newProConBody, link} = req.body;
 
             if (proConId === undefined || userId === undefined || newProConBody === undefined) {
                 return res.status(400).json({
@@ -18,6 +18,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                     where: {
                         id: -proConId,
                     },
+                    include: { Idea: { include: { DiscussionPost: true } } }
                 });
                 if (con === null) {
                     return res.status(400).json({
@@ -25,7 +26,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                         error: 'Invalid request',
                     });
                 }
-                if (con.created_by !== userId) {
+                if (con.created_by !== userId && con.Idea.DiscussionPost.admin_link !== link) {
                     return res.status(403).json({
                         success: false,
                         error: 'Forbidden',
@@ -44,6 +45,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                     where: {
                         id: proConId,
                     },
+                    include: { Idea: { include: { DiscussionPost: true } } }
                 });
                 if (pro === null) {
                     return res.status(400).json({
@@ -51,7 +53,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                         error: 'Invalid request',
                     });
                 }
-                if (pro.created_by !== userId) {
+                if (pro.created_by !== userId && pro.Idea.DiscussionPost.admin_link !== link) {
                     return res.status(403).json({
                         success: false,
                         error: 'Forbidden',

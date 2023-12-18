@@ -188,6 +188,7 @@ const DiscussionPage: React.FC = () => {
                 proConId: editingProConId,
                 userId: user.userId,
                 newProConBody: editingProConText,
+                link: link,
             };
             let url: string = "/api/editProCon";
             const response = await fetch(url, {
@@ -229,6 +230,7 @@ const DiscussionPage: React.FC = () => {
                 ideaId: editingIdeaId,
                 userId: user.userId,
                 newIdeaBody: editingIdeaText,
+                link: link,
             };
             let url: string = "/api/editIdea";
             const response = await fetch(url, {

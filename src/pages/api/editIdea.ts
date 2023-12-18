@@ -4,7 +4,7 @@ import prisma from "@/prisma";
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
     if (req.method === 'POST') {
         try {
-            const {ideaId, userId, newIdeaBody} = req.body;
+            const {ideaId, userId, newIdeaBody, link} = req.body;
 
             if (ideaId === undefined || userId === undefined || newIdeaBody === undefined) {
                 return res.status(400).json({
@@ -17,6 +17,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                 where: {
                     id: ideaId,
                 },
+                include: {
+                    DiscussionPost: true,
+                },
             });
             if (idea === null) {
                 return res.status(400).json({
@@ -24,7 +27,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                     error: 'Invalid request',
                 });
             }
-            if (idea.created_by !== userId) {
+            if (idea.created_by !== userId && idea.DiscussionPost.admin_link !== link) {
                 return res.status(403).json({
                     success: false,
                     error: 'Forbidden',
