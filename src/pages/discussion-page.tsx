@@ -100,7 +100,8 @@ const DiscussionPage: React.FC = () => {
     const [maxNumOfVoting, setMaxNumOfVoting] = useState<number>(0);
     const [checkboxes, setCheckboxes] = useState<string[]>([]);
     const [votesPerDay, setVotesPerDay] = useState<number[]>([]);
-    const [seeVotes, setSeeVotes] = useState<boolean>(false);
+    const [editingProConId, setEditingProConId] = useState<number | null>(null);
+    const [editingProConText, setEditingProConText] = useState<string>('');
     const router = useRouter();
 
     const handleReceiveDiscussion = async (link: string) => {
@@ -115,7 +116,6 @@ const DiscussionPage: React.FC = () => {
             const startDate = discussion.vote_start_date;
             const endDate = discussion.vote_end_date;
             setMaxNumOfVoting(discussion.max_nof_selections);
-            setSeeVotes(discussion.can_see_votes_during_voting);
             setVotesPerDay(discussion.votes_per_day);
             if (startDate && endDate) {
                 const now = new Date();
@@ -166,6 +166,47 @@ const DiscussionPage: React.FC = () => {
         return allReviews.sort((a: any, b: any) => {
             return new Date(b.create_date).getTime() - new Date(a.create_date).getTime();
         });
+    };
+
+    // Function to toggle the edit form
+    const toggleEditProConForm = (proConId: number, currentText: string) => {
+        setEditingProConId(proConId);
+        setEditingProConText(currentText);
+    };
+
+    // Function to handle edit form input change
+    const handleEditProConInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+        setEditingProConText(e.target.value);
+    };
+
+    // Function to submit the edited pro/con
+    const submitEditProCon = async () => {
+        try {
+            const newProCon = {
+                proConId: editingProConId,
+                userId: user.userId,
+                newProConBody: editingProConText,
+            };
+            let url: string = "/api/editProCon";
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(newProCon)
+            });
+            const data = await response.json();
+            if (data.success) {
+                const link = router.query.link;
+                if (link) {
+                    handleReceiveDiscussion(link as string);
+                }
+            } else {
+                console.log('Error editing pro con:', data);
+            }
+        } catch (error) {
+            console.error('Error editing pro con:', error);
+        }
+        setEditingProConId(null);
+        setEditingProConText('');
     };
 
     const copyToClipboard = (text: string) => {
@@ -417,7 +458,7 @@ const DiscussionPage: React.FC = () => {
                             {willBeVoted && (
                                 <div className={styles.dateContainer}>
                                     <span>Voting Start Date: <span
-                                        className={styles.startingDate}>{new Date(discussion.vote_start_date).toLocaleString(undefined, { timeZoneName: 'short' })}</span></span>
+                                        className={styles.startingDate}>{new Date(discussion.vote_start_date).toLocaleString(undefined, {timeZoneName: 'short'})}</span></span>
                                 </div>
                             )}
                             <div>
@@ -445,7 +486,7 @@ const DiscussionPage: React.FC = () => {
                             {willBeVoted && (
                                 <div className={styles.dateContainer}>
                                     <span>Voting End Date: <span
-                                        className={styles.endDate}>{new Date(discussion.vote_end_date).toLocaleString(undefined, { timeZoneName: 'short' })}</span></span>
+                                        className={styles.endDate}>{new Date(discussion.vote_end_date).toLocaleString(undefined, {timeZoneName: 'short'})}</span></span>
                                 </div>
                             )}
                         </div>
@@ -564,13 +605,30 @@ const DiscussionPage: React.FC = () => {
                                         </div>
                                         <div className={styles.votingDates}>
                                             <div></div>
-                                            {(!votingStarted && (discussion.is_admin || user.userId == review.created_by)) ?
+                                            {editingProConId === review.id ? (
+                                                <form onSubmit={(e) => {
+                                                    e.preventDefault();
+                                                    submitEditProCon();
+                                                }}>
+                                                    <textarea
+                                                        value={editingProConText}
+                                                        onChange={handleEditProConInputChange}
+                                                        rows={4}
+                                                        cols={50}
+                                                    />
+                                                    <button type="submit">Save Changes</button>
+                                                </form>
+                                            ) : <div>{(!votingStarted && (discussion.is_admin || user.userId == review.created_by)) ?
                                                 <div>
                                                     <button onClick={() => deleteProCon(review.id)}>
                                                         <BsTrash/>
                                                     </button>
-                                                    <button className={styles.editButton}>Edit</button>
-                                                </div> : <p>&#8203;</p>}
+                                                    <button
+                                                        className={styles.editButton}
+                                                        onClick={() => toggleEditProConForm(review.id, review.text_body)}>
+                                                        Edit
+                                                    </button>
+                                                </div> : <p>&#8203;</p>}</div>}
                                         </div>
                                     </div>
                                 ))}
