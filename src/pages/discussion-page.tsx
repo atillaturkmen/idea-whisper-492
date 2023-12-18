@@ -104,6 +104,8 @@ const DiscussionPage: React.FC = () => {
     const [editingProConText, setEditingProConText] = useState<string>('');
     const [editingIdeaId, setEditingIdeaId] = useState<number | null>(null);
     const [editingIdeaText, setEditingIdeaText] = useState<string>('');
+    const [editingTopic, setEditingTopic] = useState<boolean>(false);
+    const [newTopicText, setNewTopicText] = useState<string>('');
     const router = useRouter();
 
     const handleReceiveDiscussion = async (link: string) => {
@@ -252,6 +254,46 @@ const DiscussionPage: React.FC = () => {
         }
         setEditingIdeaId(null);
         setEditingIdeaText('');
+    };
+
+    // Function to toggle the edit topic form
+    const toggleEditTopicForm = () => {
+        setEditingTopic(!editingTopic);
+        setNewTopicText(discussion.topic); // Reset text to current topic when toggling
+    };
+
+    // Function to handle edit topic form input change
+    const handleEditTopicInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+        setNewTopicText(e.target.value);
+    };
+
+    // Function to submit the edited topic
+    const submitEditTopic = async () => {
+        try {
+            const newTopic = {
+                discussionId: discussion.id,
+                newTopicBody: newTopicText,
+                admin_link: link,
+            };
+            let url: string = "/api/editTopic";
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(newTopic)
+            });
+            const data = await response.json();
+            if (data.success) {
+                const link = router.query.link;
+                if (link) {
+                    handleReceiveDiscussion(link as string);
+                }
+            } else {
+                console.log('Error editing topic:', data);
+            }
+        } catch (error) {
+            console.error('Error editing topic:', error);
+        }
+        setEditingTopic(false);
     };
 
     const copyToClipboard = (text: string) => {
@@ -553,10 +595,25 @@ const DiscussionPage: React.FC = () => {
                                     Add Idea
                                 </button>
                                 {discussion.is_admin && <div>
-                                    <button>
-                                        <BsTrash/>
-                                    </button>
-                                    <button className={styles.editButton}>Edit</button>
+                                    {editingTopic ? <div>
+                                        <form onSubmit={(e) => {
+                                            e.preventDefault();
+                                            submitEditTopic();
+                                        }}>
+                                            <textarea
+                                                value={newTopicText}
+                                                onChange={handleEditTopicInputChange}
+                                                rows={4}
+                                                cols={50}
+                                            />
+                                            <button type="submit">Save Changes</button>
+                                        </form>
+                                    </div> : <div>
+                                        <button>
+                                            <BsTrash/>
+                                        </button>
+                                        <button className={styles.editButton} onClick={toggleEditTopicForm}>Edit</button>
+                                    </div>}
                                 </div>}
                             </div>
                             : <p>&#8203;</p>}
