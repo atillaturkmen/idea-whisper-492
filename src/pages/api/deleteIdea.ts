@@ -4,7 +4,7 @@ import prisma from "@/prisma";
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
     if (req.method === 'POST') {
         try {
-            const {ideaId, userId} = req.body;
+            const {ideaId, userId, isAdmin} = req.body;
 
             if (ideaId === undefined || userId === undefined) {
                 return res.status(400).json({
@@ -26,7 +26,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                 });
             }
 
-            if (idea.created_by !== userId) {
+            if (idea.created_by !== userId && !isAdmin) {
                 return res.status(403).json({
                     success: false,
                     error: 'Forbidden',

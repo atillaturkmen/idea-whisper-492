@@ -425,6 +425,7 @@ const DiscussionPage: React.FC = () => {
                 body: JSON.stringify({
                     proConId: proConId,
                     userId: user.userId,
+                    isAdmin: discussion.is_admin,
                 })
             });
             const data = await response.json();
@@ -458,6 +459,7 @@ const DiscussionPage: React.FC = () => {
                 body: JSON.stringify({
                     ideaId: ideaId,
                     userId: user.userId,
+                    isAdmin: discussion.is_admin,
                 })
             });
             const data = await response.json();
@@ -606,9 +608,9 @@ const DiscussionPage: React.FC = () => {
                         {(willBeVoted && discussion.is_admin) && (
                             <div className={styles.votingDates}>
                                 {!votingStarted ? <button
-                                    className={styles.editButton}>&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;Edit
+                                    className={styles.editButton}>Edit
                                 </button> : <p>&#8203;</p>}
-                                <button className={styles.editButton}>Edit</button>
+                                {!votingEnded ?<button className={styles.editButton}>Edit</button>: <p>&#8203;</p>}
                             </div>
                         )}
                         <p className={styles.goalText}>IDEA WHISPER GOAL</p>
@@ -665,7 +667,7 @@ const DiscussionPage: React.FC = () => {
                         )}
                         {discussion.Idea.map((idea: any) => (
                             <div key={idea.id}>
-                                {(votingStarted) ? (
+                                {(votingStarted && !votingEnded) ? (
                                     <div>
                                         <input
                                             type="checkbox"
