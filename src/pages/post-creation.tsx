@@ -59,6 +59,12 @@ const PostCreation: React.FC = () => {
         setGroupNames(newGroupNames);
     };
 
+    const timeZonePart = new Intl.DateTimeFormat('en-US', { timeZoneName: 'short', hour12: false })
+        .formatToParts(new Date())
+        .find(part => part.type === 'timeZoneName');
+
+    const timeZoneName = timeZonePart ? timeZonePart.value : 'Unknown Time Zone';
+
     return (
         <div className={styles_page.container}>
             <h1>Idea Whisper</h1>
@@ -83,7 +89,8 @@ const PostCreation: React.FC = () => {
             {willBeVoted && (
                 <div className={styles_page.datePickerContainer}>
                     <div className={styles_page.datePickerItem}>
-                        <label>Voting Start Date</label>
+                        <label>Voting Start Date ({timeZoneName})
+                        </label>
                         <DatePicker
                             inline
                             dateFormat="dd/MM/yyyy"
@@ -100,7 +107,7 @@ const PostCreation: React.FC = () => {
                     </div>
 
                     <div className={styles_page.datePickerItem}>
-                        <label>Voting End Date</label>
+                        <label>Voting End Date ({timeZoneName})</label>
                         <DatePicker
                             inline
                             dateFormat="dd/MM/yyyy"
@@ -161,7 +168,7 @@ const PostCreation: React.FC = () => {
                         <button className={buttonStyles.smallButton} onClick={() => removeGroupName(index)}>Remove</button>
                     </div>
                 ))}
-                <button className={buttonStyles.smallButton} onClick={addGroupName}>Add Group Name</button>
+                <button className={buttonStyles.smallButton} onClick={addGroupName}>Add Focus Group Name</button>
             </div>}
             <br/>
 

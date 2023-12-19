@@ -41,7 +41,7 @@ const VoteChart: React.FC<VoteChartProps> = ({votesPerDay, voteStartDate, voteEn
             return;
         }
         new Chart(ctx, {
-            type: 'line',
+            type: 'bar',
             data: {
                 labels: labels,
                 datasets: [
@@ -100,7 +100,12 @@ const DiscussionPage: React.FC = () => {
     const [maxNumOfVoting, setMaxNumOfVoting] = useState<number>(0);
     const [checkboxes, setCheckboxes] = useState<string[]>([]);
     const [votesPerDay, setVotesPerDay] = useState<number[]>([]);
-    const [seeVotes, setSeeVotes] = useState<boolean>(false);
+    const [editingProConId, setEditingProConId] = useState<number | null>(null);
+    const [editingProConText, setEditingProConText] = useState<string>('');
+    const [editingIdeaId, setEditingIdeaId] = useState<number | null>(null);
+    const [editingIdeaText, setEditingIdeaText] = useState<string>('');
+    const [editingTopic, setEditingTopic] = useState<boolean>(false);
+    const [newTopicText, setNewTopicText] = useState<string>('');
     const router = useRouter();
 
     const handleReceiveDiscussion = async (link: string) => {
@@ -115,7 +120,6 @@ const DiscussionPage: React.FC = () => {
             const startDate = discussion.vote_start_date;
             const endDate = discussion.vote_end_date;
             setMaxNumOfVoting(discussion.max_nof_selections);
-            setSeeVotes(discussion.can_see_votes_during_voting);
             setVotesPerDay(discussion.votes_per_day);
             if (startDate && endDate) {
                 const now = new Date();
@@ -166,6 +170,130 @@ const DiscussionPage: React.FC = () => {
         return allReviews.sort((a: any, b: any) => {
             return new Date(b.create_date).getTime() - new Date(a.create_date).getTime();
         });
+    };
+
+    // Function to toggle the edit form
+    const toggleEditProConForm = (proConId: number, currentText: string) => {
+        setEditingProConId(proConId);
+        setEditingProConText(currentText);
+    };
+
+    // Function to handle edit form input change
+    const handleEditProConInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+        setEditingProConText(e.target.value);
+    };
+
+    // Function to submit the edited pro/con
+    const submitEditProCon = async () => {
+        try {
+            const newProCon = {
+                proConId: editingProConId,
+                userId: user.userId,
+                newProConBody: editingProConText,
+                link: link,
+            };
+            let url: string = "/api/editProCon";
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(newProCon)
+            });
+            const data = await response.json();
+            if (data.success) {
+                const link = router.query.link;
+                if (link) {
+                    handleReceiveDiscussion(link as string);
+                }
+            } else {
+                console.log('Error editing pro con:', data);
+            }
+        } catch (error) {
+            console.error('Error editing pro con:', error);
+        }
+        setEditingProConId(null);
+        setEditingProConText('');
+    };
+
+    // Function to toggle the edit idea form
+    const toggleEditIdeaForm = (ideaId: number, currentText: string) => {
+        setEditingIdeaId(ideaId);
+        setEditingIdeaText(currentText);
+    };
+
+    // Function to handle edit idea form input change
+    const handleEditIdeaInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+        setEditingIdeaText(e.target.value);
+    };
+
+    // Function to submit the edited idea
+    const submitEditIdea = async () => {
+        try {
+            const newIdea = {
+                ideaId: editingIdeaId,
+                userId: user.userId,
+                newIdeaBody: editingIdeaText,
+                link: link,
+            };
+            let url: string = "/api/editIdea";
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(newIdea)
+            });
+            const data = await response.json();
+            if (data.success) {
+                const link = router.query.link;
+                if (link) {
+                    handleReceiveDiscussion(link as string);
+                }
+            } else {
+                console.log('Error editing idea:', data);
+            }
+        } catch (error) {
+            console.error('Error editing idea:', error);
+        }
+        setEditingIdeaId(null);
+        setEditingIdeaText('');
+    };
+
+    // Function to toggle the edit topic form
+    const toggleEditTopicForm = () => {
+        setEditingTopic(!editingTopic);
+        setNewTopicText(discussion.topic); // Reset text to current topic when toggling
+    };
+
+    // Function to handle edit topic form input change
+    const handleEditTopicInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+        setNewTopicText(e.target.value);
+    };
+
+    // Function to submit the edited topic
+    const submitEditTopic = async () => {
+        try {
+            const newTopic = {
+                discussionId: discussion.id,
+                newTopicBody: newTopicText,
+                admin_link: link,
+            };
+            let url: string = "/api/editTopic";
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(newTopic)
+            });
+            const data = await response.json();
+            if (data.success) {
+                const link = router.query.link;
+                if (link) {
+                    handleReceiveDiscussion(link as string);
+                }
+            } else {
+                console.log('Error editing topic:', data);
+            }
+        } catch (error) {
+            console.error('Error editing topic:', error);
+        }
+        setEditingTopic(false);
     };
 
     const copyToClipboard = (text: string) => {
@@ -349,6 +477,32 @@ const DiscussionPage: React.FC = () => {
         }
     }
 
+    async function deleteDiscussion() {
+        // alert to confirm deletion
+        if (!confirm("Are you sure you want to delete this discussion?")) return;
+        try {
+            const url = "/api/deleteDiscussion";
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    discussionId: discussion.id,
+                    admin_link: link,
+                })
+            });
+            const data = await response.json();
+            if (data.success) {
+                if (link) {
+                    handleReceiveDiscussion(link as string);
+                }
+            } else {
+                console.log('Error while deleting:', data);
+            }
+        } catch (error) {
+            console.error('Error while deleting:', error);
+        }
+    }
+
     function copyVisitorLink() {
         const selectBox: any = document.getElementById("visitor-links");
         if (selectBox == null) {
@@ -417,7 +571,7 @@ const DiscussionPage: React.FC = () => {
                             {willBeVoted && (
                                 <div className={styles.dateContainer}>
                                     <span>Voting Start Date: <span
-                                        className={styles.startingDate}>{new Date(discussion.vote_start_date).toLocaleString()}</span></span>
+                                        className={styles.startingDate}>{new Date(discussion.vote_start_date).toLocaleString(undefined, {timeZoneName: 'short'})}</span></span>
                                 </div>
                             )}
                             <div>
@@ -445,7 +599,7 @@ const DiscussionPage: React.FC = () => {
                             {willBeVoted && (
                                 <div className={styles.dateContainer}>
                                     <span>Voting End Date: <span
-                                        className={styles.endDate}>{new Date(discussion.vote_end_date).toLocaleString()}</span></span>
+                                        className={styles.endDate}>{new Date(discussion.vote_end_date).toLocaleString(undefined, {timeZoneName: 'short'})}</span></span>
                                 </div>
                             )}
                         </div>
@@ -467,10 +621,25 @@ const DiscussionPage: React.FC = () => {
                                     Add Idea
                                 </button>
                                 {discussion.is_admin && <div>
-                                    <button>
-                                        <BsTrash/>
-                                    </button>
-                                    <button className={styles.editButton}>Edit</button>
+                                    {editingTopic ? <div>
+                                        <form onSubmit={(e) => {
+                                            e.preventDefault();
+                                            submitEditTopic();
+                                        }}>
+                                            <textarea
+                                                value={newTopicText}
+                                                onChange={handleEditTopicInputChange}
+                                                rows={4}
+                                                cols={50}
+                                            />
+                                            <button type="submit">Save Changes</button>
+                                        </form>
+                                    </div> : <div>
+                                        <button onClick={deleteDiscussion}>
+                                            <BsTrash/>
+                                        </button>
+                                        <button className={styles.editButton} onClick={toggleEditTopicForm}>Edit</button>
+                                    </div>}
                                 </div>}
                             </div>
                             : <p>&#8203;</p>}
@@ -545,12 +714,31 @@ const DiscussionPage: React.FC = () => {
                                                     type="submit">Submit {isPro ? "Pro" : "Con"}</button>
                                         </form>
                                     )}
-                                    {(!votingStarted && (discussion.is_admin || user.userId == idea.created_by)) ? <div>
-                                        <button onClick={() => deleteIdea(idea.id)}>
-                                            <BsTrash/>
-                                        </button>
-                                        <button className={styles.editButton}>Edit</button>
-                                    </div> : <p>&#8203;</p>}
+                                    {editingIdeaId === idea.id ? (
+                                        <form onSubmit={(e) => {
+                                            e.preventDefault();
+                                            submitEditIdea();
+                                        }}>
+                                            <textarea
+                                                value={editingIdeaText}
+                                                onChange={handleEditIdeaInputChange}
+                                                rows={4}
+                                                cols={50}
+                                            />
+                                            <button type="submit">Save Changes</button>
+                                        </form>
+                                    ) : <div>
+                                        {(!votingStarted && (discussion.is_admin || user.userId == idea.created_by)) ? <div>
+                                            <button onClick={() => deleteIdea(idea.id)}>
+                                                <BsTrash/>
+                                            </button>
+                                            <button
+                                                className={styles.editButton}
+                                                onClick={() => toggleEditIdeaForm(idea.id, idea.text_body)}>
+                                                Edit
+                                            </button>
+                                        </div> : <p>&#8203;</p>}
+                                    </div>}
                                 </div>
                                 {mergeAndSortProsAndCons(idea).map((review: any) => (
                                     <div key={review.id}>
@@ -564,13 +752,30 @@ const DiscussionPage: React.FC = () => {
                                         </div>
                                         <div className={styles.votingDates}>
                                             <div></div>
-                                            {(!votingStarted && (discussion.is_admin || user.userId == review.created_by)) ?
+                                            {editingProConId === review.id ? (
+                                                <form onSubmit={(e) => {
+                                                    e.preventDefault();
+                                                    submitEditProCon();
+                                                }}>
+                                                    <textarea
+                                                        value={editingProConText}
+                                                        onChange={handleEditProConInputChange}
+                                                        rows={4}
+                                                        cols={50}
+                                                    />
+                                                    <button type="submit">Save Changes</button>
+                                                </form>
+                                            ) : <div>{(!votingStarted && (discussion.is_admin || user.userId == review.created_by)) ?
                                                 <div>
                                                     <button onClick={() => deleteProCon(review.id)}>
                                                         <BsTrash/>
                                                     </button>
-                                                    <button className={styles.editButton}>Edit</button>
-                                                </div> : <p>&#8203;</p>}
+                                                    <button
+                                                        className={styles.editButton}
+                                                        onClick={() => toggleEditProConForm(review.id, review.text_body)}>
+                                                        Edit
+                                                    </button>
+                                                </div> : <p>&#8203;</p>}</div>}
                                         </div>
                                     </div>
                                 ))}
