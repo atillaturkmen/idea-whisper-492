@@ -72,6 +72,7 @@ const DiscussionPage: React.FC = () => {
                 setWillBeVoted(false);
             }
             setDiscussion(discussion);
+            console.log(discussion);
         } else {
             router.push("/");
         }
@@ -593,20 +594,27 @@ const DiscussionPage: React.FC = () => {
                                 <br/><br/>
                             </form>
                         )}
-                        {discussion.Idea.map((idea: any) => (
-                            <div key={idea.id}>
+                        {discussion.Idea.map((idea: any,index: number) => (
+                            <div key={idea.id}
+                            >
                                 {(votingStarted && !votingEnded) ? (
-                                    <div>
-                                        <input
-                                            type="checkbox"
-                                            checked={checkboxes.includes(idea.id)}
-                                            onChange={(e) => handleCheckboxChange(e, idea.id)}
-                                        />
-                                    </div>
+                                <div>
+                                    <input
+                                    type="checkbox"
+                                    checked={checkboxes.includes(idea.id)}
+                                    onChange={(e) => handleCheckboxChange(e, idea.id)}
+                                    />
+                                </div>
                                 ) : (
+                                (votingEnded) ? (
+                                    <p style={{ marginBottom: '1px', fontWeight: 'bold', fontStyle: 'italic' }}>
+                                    {discussion.votes[index] < 0 ? -discussion.votes[index] : discussion.votes[index]}{' '}
+                                    {discussion.votes[index] === 1 || discussion.votes[index] === -1 ? 'vote' : 'votes'}
+                                    </p>                                ) : (
                                     <p>&#8203;</p>
+                                )
                                 )}
-                                <div className={styles.ideaBox}>
+                                <div className={ !votingEnded? styles.ideaBox: discussion.votes[index] < 0 ? styles.ideaVoteWinner:styles.ideaVoteLoser}>
                                     <div className={styles.votingDates}>
                                         <p>{idea.text_body}</p>
                                     </div>
