@@ -1,5 +1,7 @@
 import type {NextApiRequest, NextApiResponse} from 'next';
 import prisma from "@/prisma";
+import {sendMail} from "@/email/sendMail";
+const validator = require('validator');
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
     if (req.method === 'POST') {
@@ -76,10 +78,17 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                         }
                     };
                 } else {
+                    group.emailList.filter((email: string) => {
+                        return validator.isEmail(email);
+                    });
                     // For email groups, create a visitor link for each email
                     const emailLinks = group.emailList.map(() => ({
                         link: generateRandomLink(255),
                     }));
+
+                    emailLinks.forEach((emailLink: any, index: number) => {
+                        sendMail(group.emailList[index], process.env.DOMAIN_NAME + "/discussion-page?link=" + emailLink.link);
+                    });
 
                     return {
                         name: group.name,
