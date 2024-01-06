@@ -12,7 +12,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                 allowMultipleSelections,
                 maxSelections,
                 enableLikes,
-                filteredGroupNames,
+                groups,
             } = req.body;
 
             if (topic == null || allowVoteVisibility == null || allowMultipleSelections == null || maxSelections == null
@@ -52,8 +52,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             }
 
             // check if group names are shorter than 255 characters
-            for (let i = 0; i < filteredGroupNames.length; i++) {
-                if (filteredGroupNames[i].length > 255) {
+            for (let i = 0; i < groups.length; i++) {
+                if (groups[i].name.length > 255) {
                     return res.status(400).json({
                         success: false,
                         error: "Group names must be shorter than 255 characters",
@@ -63,20 +63,44 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
             const randomAdminLink = generateRandomLink(255);
 
-            // create random links for each group
-            const randomVisitorLinks: Array<any> = [];
-            for (let i = 0; i < filteredGroupNames.length; i++) {
-                randomVisitorLinks.push({
-                    link: generateRandomLink(255),
-                    group_name: filteredGroupNames[i],
-                });
-            }
+            const groupData = groups.map((group: any) => {
+                if (!group.isEmailCollector) {
+                    // For non-email groups, create one visitor link per group
+                    return {
+                        name: group.name,
+                        is_email: false,
+                        VisitorLink: {
+                            create: {
+                                link: generateRandomLink(255)
+                            }
+                        }
+                    };
+                } else {
+                    // For email groups, create a visitor link for each email
+                    const emailLinks = group.emailList.map(() => ({
+                        link: generateRandomLink(255),
+                    }));
+
+                    return {
+                        name: group.name,
+                        is_email: true,
+                        VisitorLink: {
+                            create: emailLinks
+                        }
+                    };
+                }
+            });
 
             // if no groups were selected, create a default group
-            if (randomVisitorLinks.length === 0) {
-                randomVisitorLinks.push({
-                    link: generateRandomLink(255),
-                    group_name: "default",
+            if (groupData.length === 0) {
+                groupData.push({
+                    name: "default",
+                    is_email: false,
+                    VisitorLink: {
+                        create: {
+                            link: generateRandomLink(255)
+                        }
+                    }
                 });
             }
 
@@ -91,15 +115,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                     admin_link: randomAdminLink,
                     enable_likes: enableLikes,
                     Group: {
-                        create: randomVisitorLinks.map(group => ({
-                            name: group.group_name,
-                            is_email: false,
-                            VisitorLink: {
-                                create: {
-                                    link: group.link
-                                }
-                            }
-                        })),
+                        create: groupData,
                     },
                 }
             });

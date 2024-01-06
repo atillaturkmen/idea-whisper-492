@@ -71,13 +71,62 @@
     align-self: center; /* Center horizontally within datePickerItem */
 }
 
-
-/* Modal link styles */
 .link {
     font-weight: bold;
     color: #007BFF;
     text-decoration: underline;
 }
 
-/* Modal styles (you can use the existing Modal.module.css) */
-/* Add styles to match your modal design */
+.groupCard {
+    border: 1px solid #ddd;
+    padding: 10px;
+    margin-top: 10px;
+    margin-bottom: 10px;
+    border-radius: 5px;
+    background-color: #f9f9f9;
+}
+
+.groupHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.groupNameInput {
+    flex-grow: 1;
+    margin-right: 10px;
+    padding: 5px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+.removeGroupButton {
+    background-color: #ff4d4f;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.removeGroupButton:hover {
+    background-color: #ff7875;
+}
+
+.groupBody {
+    display: flex;
+    flex-direction: column;
+}
+
+.emailCollectorLabel {
+    display: flex;
+    align-items: center;
+    margin-bottom: 5px;
+}
+
+.emailListInput {
+    padding: 5px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
