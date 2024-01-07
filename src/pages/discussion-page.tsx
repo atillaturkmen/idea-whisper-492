@@ -534,6 +534,7 @@ const DiscussionPage: React.FC = () => {
                                 </div>
                             )}
                         </div>
+                        {/* 
                         {(willBeVoted && discussion.is_admin) && (
                             <div className={styles.votingDates}>
                                 {!votingStarted ? <button
@@ -541,7 +542,8 @@ const DiscussionPage: React.FC = () => {
                                 </button> : <p>&#8203;</p>}
                                 {!votingEnded ?<button className={styles.editButton}>Edit</button>: <p>&#8203;</p>}
                             </div>
-                        )}
+                        )} 
+                        */}
                         <p className={styles.goalText}>IDEA WHISPER GOAL</p>
                         <div className={styles.ideaWhisperGoal}>
                             <p>{discussion.topic}</p>
