@@ -74,65 +74,19 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                 return res.status(404).json(discussion);
             }
             const visitorDiscussion = group.DiscussionPost;
+            const votesArray = await getVotes(visitorDiscussion);
             const newDiscussion:any = {
                 ...visitorDiscussion,
                 VisitorLink: [{link: link}],
                 is_admin: false,
                 votes_per_day: [], // don't give the visitor vote graph data
+                votes: votesArray,
             };
             delete newDiscussion.admin_link;
             return res.status(200).json(newDiscussion);
         }
-        // get votes per day
-        let votes_per_day:Array<number> = [];
-        const startDate = discussion.vote_start_date;
-        const endDate = discussion.vote_end_date;
-        if (startDate != null && endDate != null) {
-            const votesForDiscussion = await prisma.vote.findMany({
-                where: {
-                  Idea: {
-                    idDiscussionPost: discussion.id,
-                  },
-                },
-              });
-            type VoteCountMap = { [key: string]: number };
-            const voteCountMap: VoteCountMap = votesForDiscussion.reduce((map, vote) => {
-                const dateKey = vote.vote_date.toISOString().split('T')[0];
-                map[dateKey] = (map[dateKey] || 0) + 1;
-                return map;
-            }, {} as VoteCountMap);
-
-            // Generate an array for each day in the range
-            let currentDate = new Date(startDate);
-            while (currentDate <= endDate) {
-                const dateKey = currentDate.toISOString().split('T')[0];
-                votes_per_day.push(voteCountMap[dateKey] || 0);
-                currentDate.setDate(currentDate.getDate() + 1);
-            }
-        }
-        const votes = await prisma.vote.groupBy({
-            by: ['idIdea'],
-            _count: {
-                id: true,
-            },
-            where: {
-                Idea: {
-                    idDiscussionPost: discussion.id,
-                },
-            },
-        });
-        //create an array of the number of votes only
-        let votesArray:Array<number> = [];
-        let max = 0;
-        let maxIndex = 0;
-        for (let i = 0; i < votes.length; i++) {
-            if (votes[i]._count.id > max) {
-                max = votes[i]._count.id;
-                maxIndex = i;
-            }
-            votesArray.push(votes[i]._count.id);
-        }
-        votesArray[maxIndex] = -1 * votesArray[maxIndex];
+        const votes_per_day = await getVotesPerDay(discussion);
+        const votesArray = await getVotes(discussion);
         const newDiscussion = {
             ...discussion,
             is_admin: true,
@@ -143,4 +97,62 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         return res.status(200).json(newDiscussion);
     }
     return res.status(405).end(); 
+}
+
+async function getVotesPerDay(discussion: any) {
+    // get votes per day
+    let votes_per_day:Array<number> = [];
+    const startDate = discussion.vote_start_date;
+    const endDate = discussion.vote_end_date;
+    if (startDate != null && endDate != null) {
+        const votesForDiscussion = await prisma.vote.findMany({
+            where: {
+              Idea: {
+                idDiscussionPost: discussion.id,
+              },
+            },
+          });
+        type VoteCountMap = { [key: string]: number };
+        const voteCountMap: VoteCountMap = votesForDiscussion.reduce((map, vote) => {
+            const dateKey = vote.vote_date.toISOString().split('T')[0];
+            map[dateKey] = (map[dateKey] || 0) + 1;
+            return map;
+        }, {} as VoteCountMap);
+
+        // Generate an array for each day in the range
+        let currentDate = new Date(startDate);
+        while (currentDate <= endDate) {
+            const dateKey = currentDate.toISOString().split('T')[0];
+            votes_per_day.push(voteCountMap[dateKey] || 0);
+            currentDate.setDate(currentDate.getDate() + 1);
+        }
+    }
+    return votes_per_day;
+}
+
+async function getVotes(discussion: any) {
+    const votes = await prisma.vote.groupBy({
+        by: ['idIdea'],
+        _count: {
+            id: true,
+        },
+        where: {
+            Idea: {
+                idDiscussionPost: discussion.id,
+            },
+        },
+    });
+    //create an array of the number of votes only
+    let votesArray:Array<number> = [];
+    let max = 0;
+    let maxIndex = 0;
+    for (let i = 0; i < votes.length; i++) {
+        if (votes[i]._count.id > max) {
+            max = votes[i]._count.id;
+            maxIndex = i;
+        }
+        votesArray.push(votes[i]._count.id);
+    }
+    votesArray[maxIndex] = -1 * votesArray[maxIndex];
+    return votesArray;
 }
