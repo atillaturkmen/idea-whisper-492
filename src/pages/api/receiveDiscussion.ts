@@ -88,24 +88,17 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         const startDate = discussion.vote_start_date;
         const endDate = discussion.vote_end_date;
         if (startDate != null && endDate != null) {
-            const voteCounts = await prisma.vote.groupBy({
-                by: ['vote_date'],
-                _count: {
-                    id: true,
-                },
+            const votesForDiscussion = await prisma.vote.findMany({
                 where: {
-                    Idea: {
-                        idDiscussionPost: discussion.id,
-                    },
+                  Idea: {
+                    idDiscussionPost: discussion.id,
+                  },
                 },
-                orderBy: {
-                    vote_date: 'asc',
-                }
-            });
+              });
             type VoteCountMap = { [key: string]: number };
-            const voteCountMap: VoteCountMap = voteCounts.reduce((map, vote) => {
+            const voteCountMap: VoteCountMap = votesForDiscussion.reduce((map, vote) => {
                 const dateKey = vote.vote_date.toISOString().split('T')[0];
-                map[dateKey] = vote._count.id;
+                map[dateKey] = (map[dateKey] || 0) + 1;
                 return map;
             }, {} as VoteCountMap);
 
