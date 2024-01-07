@@ -34,6 +34,7 @@ model Group {
 model VisitorLink {
   link                String         @id @db.VarChar(255)
   idGroup    Int
+  has_voted       Boolean       @map("has_voted")
   Group      Group @relation(fields: [idGroup], references: [id], onDelete: Cascade)
 }
 

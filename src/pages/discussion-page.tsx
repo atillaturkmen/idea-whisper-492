@@ -72,7 +72,6 @@ const DiscussionPage: React.FC = () => {
                 setWillBeVoted(false);
             }
             setDiscussion(discussion);
-            console.log(discussion);
         } else {
             router.push("/");
         }
@@ -445,7 +444,6 @@ const DiscussionPage: React.FC = () => {
 
     const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>, ideaId: string) => {
         const isChecked = e.target.checked;
-        console.log(maxNumOfVoting);
         if (isChecked && checkboxes.length >= maxNumOfVoting) {
             return; // Do not allow checking more checkboxes than maxNumOfVoting
         }
@@ -468,7 +466,11 @@ const DiscussionPage: React.FC = () => {
             const response = await fetch('/api/sendVote', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({votedIdeaIds: checkboxes})
+                body: JSON.stringify({
+                    votedIdeaIds: checkboxes,
+                    link: link,
+                    isAdmin: discussion.is_admin,
+                })
             });
             const data = await response.json();
             if (data.success) {
@@ -478,7 +480,10 @@ const DiscussionPage: React.FC = () => {
                     position: toast.POSITION.TOP_RIGHT,
                 });
             } else {
-                console.log('Error submitting vote');
+                console.log('Error submitting vote: ' + data.error);
+                toast.error('You have already voted with this link!', {
+                    position: toast.POSITION.TOP_RIGHT,
+                });
             }
         } catch (error) {
             console.error('Error submitting vote:');
