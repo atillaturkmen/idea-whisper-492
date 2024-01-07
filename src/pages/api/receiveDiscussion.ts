@@ -110,10 +110,34 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                 currentDate.setDate(currentDate.getDate() + 1);
             }
         }
+        const votes = await prisma.vote.groupBy({
+            by: ['idIdea'],
+            _count: {
+                id: true,
+            },
+            where: {
+                Idea: {
+                    idDiscussionPost: discussion.id,
+                },
+            },
+        });
+        //create an array of the number of votes only
+        let votesArray:Array<number> = [];
+        let max = 0;
+        let maxIndex = 0;
+        for (let i = 0; i < votes.length; i++) {
+            if (votes[i]._count.id > max) {
+                max = votes[i]._count.id;
+                maxIndex = i;
+            }
+            votesArray.push(votes[i]._count.id);
+        }
+        votesArray[maxIndex] = -1 * votesArray[maxIndex];
         const newDiscussion = {
             ...discussion,
             is_admin: true,
             votes_per_day: votes_per_day,
+            votes: votesArray,
         };
 
         return res.status(200).json(newDiscussion);
