@@ -88,6 +88,22 @@
     border-radius: 8px;
 }
 
+.ideaVoteLoser {
+    background-color: #d8d8d8;
+    color: #444444;
+    padding: 15px;
+    border-radius: 8px;
+    border:2px solid #fd5857
+}
+
+.ideaVoteWinner {
+    background-color: #d8d8d8;
+    color: #444444;
+    padding: 15px;
+    border-radius: 8px;
+    border:5px solid #29bd4e
+}
+
 .addProText {
     color: #29bd4e;
     padding: 5px;

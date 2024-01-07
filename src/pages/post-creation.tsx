@@ -15,11 +15,22 @@ const PostCreation: React.FC = () => {
     const [enableLikes, setEnableLikes] = useState(false);
     const [maxSelections, setMaxSelections] = useState(1);
     const [groupNames, setGroupNames] = useState<string[]>([]);
+    const [isEmailCollector, setIsEmailCollector] = useState<boolean[]>([]);
+    const [emailListInputs, setEmailListInputs] = useState<string[]>([]);
 
     const router = useRouter();
 
     const handleSubmit = async () => {
-        const filteredGroupNames = groupNames.filter(element => element !== "");
+        const groups = groupNames.filter(element => element.trim() !== "").
+        map((groupName, index) => {
+            return {
+                name: groupName,
+                isEmailCollector: isEmailCollector[index],
+                emailList: emailListInputs[index]?.split(',').
+                filter(email => email.trim() !== "").
+                map(email => email.trim()),
+            };
+        });
         const response = await fetch('/api/createDiscussion', {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
@@ -31,7 +42,7 @@ const PostCreation: React.FC = () => {
                 allowMultipleSelections,
                 maxSelections,
                 enableLikes,
-                filteredGroupNames
+                groups,
             })
         });
 
@@ -43,6 +54,25 @@ const PostCreation: React.FC = () => {
         }
     };
 
+    const handleCollectorTypeChange = (index: number) => {
+        const newIsEmailCollector = [...isEmailCollector];
+        newIsEmailCollector[index] = !newIsEmailCollector[index];
+        setIsEmailCollector(newIsEmailCollector);
+
+        if (!newIsEmailCollector[index]) {
+            // Clear the email list input when switching away from email collector
+            const newEmailListInputs = [...emailListInputs];
+            newEmailListInputs[index] = '';
+            setEmailListInputs(newEmailListInputs);
+        }
+    };
+
+    const handleEmailListInputChange = (e: React.ChangeEvent<HTMLInputElement>, index: number) => {
+        const newEmailListInputs = [...emailListInputs];
+        newEmailListInputs[index] = e.target.value;
+        setEmailListInputs(newEmailListInputs);
+    };
+
     const handleGroupNameChange = (e: React.ChangeEvent<HTMLInputElement>, index: number) => {
         const newGroupNames = [...groupNames];
         newGroupNames[index] = e.target.value;
@@ -51,15 +81,25 @@ const PostCreation: React.FC = () => {
 
     const addGroupName = () => {
         setGroupNames([...groupNames, '']);
+        setEmailListInputs([...emailListInputs, '']); // Add an empty string for the new group
+        setIsEmailCollector([...isEmailCollector, false]); // Add false as default for new group
     };
 
     const removeGroupName = (index: number) => {
         const newGroupNames = [...groupNames];
         newGroupNames.splice(index, 1);
         setGroupNames(newGroupNames);
+
+        const newEmailListInputs = [...emailListInputs];
+        newEmailListInputs.splice(index, 1); // Remove the email list input for the removed group
+        setEmailListInputs(newEmailListInputs);
+
+        const newIsEmailCollector = [...isEmailCollector];
+        newIsEmailCollector.splice(index, 1); // Remove the corresponding email collector state
+        setIsEmailCollector(newIsEmailCollector);
     };
 
-    const timeZonePart = new Intl.DateTimeFormat('en-US', { timeZoneName: 'short', hour12: false })
+    const timeZonePart = new Intl.DateTimeFormat('en-US', {timeZoneName: 'short', hour12: false})
         .formatToParts(new Date())
         .find(part => part.type === 'timeZoneName');
 
@@ -159,15 +199,51 @@ const PostCreation: React.FC = () => {
 
             {willBeVoted && <div>
                 {groupNames.map((groupName, index) => (
-                    <div key={index}>
-                        <input
-                            type="text"
-                            value={groupName}
-                            onChange={(e) => handleGroupNameChange(e, index)}
-                        />
-                        <button className={buttonStyles.smallButton} onClick={() => removeGroupName(index)}>Remove</button>
+                    <div key={index} className={styles_page.groupCard}>
+                        <div className={styles_page.groupHeader}>
+                            <input
+                                type="text"
+                                value={groupName}
+                                onChange={(e) => handleGroupNameChange(e, index)}
+                                className={styles_page.groupNameInput}
+                                placeholder="Focus Group Name"
+                            />
+                            <button
+                                className={`${buttonStyles.smallButton} ${styles_page.removeGroupButton}`}
+                                onClick={() => removeGroupName(index)}
+                            >
+                                Remove
+                            </button>
+                        </div>
+                        <div className={styles_page.groupBody}>
+                            <label className={styles_page.emailCollectorLabel}>
+                                <input
+                                    type="checkbox"
+                                    checked={!isEmailCollector[index]}
+                                    onChange={() => handleCollectorTypeChange(index)}
+                                />
+                                Link Collector
+                                <input
+                                    type="checkbox"
+                                    checked={isEmailCollector[index] || false}
+                                    onChange={() => handleCollectorTypeChange(index)}
+                                    style={{marginLeft: '10px'}}
+                                />
+                                Email Collector
+                            </label>
+                            {isEmailCollector[index] && (
+                                <input
+                                    type="text"
+                                    value={emailListInputs[index] || ''}
+                                    onChange={(e) => handleEmailListInputChange(e, index)}
+                                    className={styles_page.emailListInput}
+                                    placeholder="Enter comma-separated emails"
+                                />
+                            )}
+                        </div>
                     </div>
                 ))}
+
                 <button className={buttonStyles.smallButton} onClick={addGroupName}>Add Focus Group Name</button>
             </div>}
             <br/>

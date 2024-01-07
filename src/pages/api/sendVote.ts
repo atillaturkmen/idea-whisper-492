@@ -4,7 +4,7 @@ import prisma from "@/prisma";
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
     if (req.method === 'POST') {
         try {
-            const {votedIdeaIds} = req.body;
+            const {votedIdeaIds, link, isAdmin} = req.body;
             const voteDate = new Date();
 
             if (votedIdeaIds == null) {
@@ -41,6 +41,39 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                 error: 'Idea(s) not found',
                 notFoundIdeas,
             });
+            }
+            if (!isAdmin) {
+                const visitorLink = await prisma.visitorLink.findFirst({
+                    where: {
+                        link: String(link),
+                    },
+                    include: {
+                        Group: true,
+                    },
+                });
+                if (!visitorLink) {
+                    return res.status(404).json({
+                        success: false,
+                        error: 'Visitor link not found',
+                    });
+                }
+                if (visitorLink.Group.is_email) {
+                    if (visitorLink.has_voted) {
+                        return res.status(400).json({
+                            success: false,
+                            error: 'Visitor has already voted',
+                        });
+                    } else {
+                        await prisma.visitorLink.update({
+                            where: {
+                                link: String(link),
+                            },
+                            data: {
+                                has_voted: true,
+                            },
+                        });
+                    }
+                }
             }
             for (const ideaId of votedIdeaIds) {
                 await prisma.vote.create({

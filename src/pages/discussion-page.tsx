@@ -444,7 +444,6 @@ const DiscussionPage: React.FC = () => {
 
     const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>, ideaId: string) => {
         const isChecked = e.target.checked;
-        console.log(maxNumOfVoting);
         if (isChecked && checkboxes.length >= maxNumOfVoting) {
             return; // Do not allow checking more checkboxes than maxNumOfVoting
         }
@@ -467,7 +466,11 @@ const DiscussionPage: React.FC = () => {
             const response = await fetch('/api/sendVote', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({votedIdeaIds: checkboxes})
+                body: JSON.stringify({
+                    votedIdeaIds: checkboxes,
+                    link: link,
+                    isAdmin: discussion.is_admin,
+                })
             });
             const data = await response.json();
             if (data.success) {
@@ -477,7 +480,10 @@ const DiscussionPage: React.FC = () => {
                     position: toast.POSITION.TOP_RIGHT,
                 });
             } else {
-                console.log('Error submitting vote');
+                console.log('Error submitting vote: ' + data.error);
+                toast.error('You have already voted with this link!', {
+                    position: toast.POSITION.TOP_RIGHT,
+                });
             }
         } catch (error) {
             console.error('Error submitting vote:');
@@ -533,6 +539,7 @@ const DiscussionPage: React.FC = () => {
                                 </div>
                             )}
                         </div>
+                        {/* 
                         {(willBeVoted && discussion.is_admin) && (
                             <div className={styles.votingDates}>
                                 {!votingStarted ? <button
@@ -540,7 +547,8 @@ const DiscussionPage: React.FC = () => {
                                 </button> : <p>&#8203;</p>}
                                 {!votingEnded ?<button className={styles.editButton}>Edit</button>: <p>&#8203;</p>}
                             </div>
-                        )}
+                        )} 
+                        */}
                         <p className={styles.goalText}>IDEA WHISPER GOAL</p>
                         <div className={styles.ideaWhisperGoal}>
                             <p>{discussion.topic}</p>
@@ -593,20 +601,27 @@ const DiscussionPage: React.FC = () => {
                                 <br/><br/>
                             </form>
                         )}
-                        {discussion.Idea.map((idea: any) => (
-                            <div key={idea.id}>
+                        {discussion.Idea.map((idea: any,index: number) => (
+                            <div key={idea.id}
+                            >
                                 {(votingStarted && !votingEnded) ? (
-                                    <div>
-                                        <input
-                                            type="checkbox"
-                                            checked={checkboxes.includes(idea.id)}
-                                            onChange={(e) => handleCheckboxChange(e, idea.id)}
-                                        />
-                                    </div>
+                                <div>
+                                    <input
+                                    type="checkbox"
+                                    checked={checkboxes.includes(idea.id)}
+                                    onChange={(e) => handleCheckboxChange(e, idea.id)}
+                                    />
+                                </div>
                                 ) : (
+                                (votingEnded) ? (
+                                    <p style={{ marginBottom: '1px', fontWeight: 'bold', fontStyle: 'italic' }}>
+                                    {discussion.votes[index] < 0 ? -discussion.votes[index] : discussion.votes[index]}{' '}
+                                    {discussion.votes[index] === 1 || discussion.votes[index] === -1 ? 'vote' : 'votes'}
+                                    </p>                                ) : (
                                     <p>&#8203;</p>
+                                )
                                 )}
-                                <div className={styles.ideaBox}>
+                                <div className={ !votingEnded? styles.ideaBox: discussion.votes[index] < 0 ? styles.ideaVoteWinner:styles.ideaVoteLoser}>
                                     <div className={styles.votingDates}>
                                         <p>{idea.text_body}</p>
                                     </div>
