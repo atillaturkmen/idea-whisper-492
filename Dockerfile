@@ -7,6 +7,9 @@ WORKDIR /usr/src/app
 # Copy package.json and package-lock.json to the container
 COPY package*.json ./
 
+# For servers behind proxy
+RUN npm config set registry http://registry.npmjs.org/
+
 # Install dependencies
 RUN npm install
 
