@@ -616,7 +616,7 @@ const DiscussionPage: React.FC = () => {
                             ><DialogTitle>{"You can copy and share visitor link with others!"}</DialogTitle>
                             <DialogContent>
                               <DialogContentText id="alert-dialog-slide-description">
-                              http://34.83.178.232/discussion-page?link={link}
+                              {`${location.origin}/discussion-page?link=${link}`}
                               </DialogContentText>
                             </DialogContent>
                             <DialogActions>
