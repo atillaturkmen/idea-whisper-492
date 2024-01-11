@@ -11,6 +11,9 @@
   },
   "dependencies": {
     "@elasticemail/elasticemail-client": "^4.0.23",
+    "@emotion/react": "^11.11.3",
+    "@emotion/styled": "^11.11.0",
+    "@mui/material": "^5.15.4",
     "@prisma/client": "^5.5.2",
     "@types/react-datepicker": "^4.19.1",
     "@types/react-modal": "^3.16.2",

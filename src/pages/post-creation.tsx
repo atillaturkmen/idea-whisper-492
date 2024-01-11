@@ -218,13 +218,13 @@ const PostCreation: React.FC = () => {
                         <div className={styles_page.groupBody}>
                             <label className={styles_page.emailCollectorLabel}>
                                 <input
-                                    type="checkbox"
+                                    type="radio"
                                     checked={!isEmailCollector[index]}
                                     onChange={() => handleCollectorTypeChange(index)}
                                 />
                                 Link Collector
                                 <input
-                                    type="checkbox"
+                                    type="radio"
                                     checked={isEmailCollector[index] || false}
                                     onChange={() => handleCollectorTypeChange(index)}
                                     style={{marginLeft: '10px'}}
@@ -244,7 +244,7 @@ const PostCreation: React.FC = () => {
                     </div>
                 ))}
 
-                <button className={buttonStyles.smallButton} onClick={addGroupName}>Add Focus Group Name</button>
+                <button className={buttonStyles.smallButton} onClick={addGroupName}>Add-Vote-Collector</button>
             </div>}
             <br/>
 

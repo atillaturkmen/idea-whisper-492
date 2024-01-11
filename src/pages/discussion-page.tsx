@@ -7,9 +7,27 @@ import styles from '../styles/DiscussionPage.module.css';
 import {getUserData, writeUserData} from "@/local-storage/userUtils";
 import buttonStyles from '../styles/Button.module.css';
 import VoteChart from '@/components/VoteChart';
+import Button from '@mui/material/Button';
+import Dialog from '@mui/material/Dialog';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContent from '@mui/material/DialogContent';
+import DialogContentText from '@mui/material/DialogContentText';
+import DialogTitle from '@mui/material/DialogTitle';
+import Slide from '@mui/material/Slide';
+import { TransitionProps } from '@mui/material/transitions';
+
 
 import {toast} from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+
+const Transition = React.forwardRef(function Transition(
+    props: TransitionProps & {
+      children: React.ReactElement<any, any>;
+    },
+    ref: React.Ref<unknown>,
+  ) {
+    return <Slide direction="up" ref={ref} {...props} />;
+  });
 
 const DiscussionPage: React.FC = () => {
     const [votingNotice, setVotingNotice] = useState<string | null>(null);
@@ -34,7 +52,26 @@ const DiscussionPage: React.FC = () => {
     const [editingIdeaText, setEditingIdeaText] = useState<string>('');
     const [editingTopic, setEditingTopic] = useState<boolean>(false);
     const [newTopicText, setNewTopicText] = useState<string>('');
+    const [userTypeNotice, setUserTypeNotice] = useState<string>('');
+    const [openDialogForAdmin, setOpenDialogForAdmin] = useState<boolean>(false);
+    const [openDialogForVisitor, setOpenDialogForVisitor] = useState<boolean>(false);
     const router = useRouter();
+
+    const handleOpenDialogForAdmin = () => {
+        setOpenDialogForAdmin(true);
+    }
+    
+    const handleCloseDialogForAdmin = () => {
+        setOpenDialogForAdmin(false);
+    }
+
+    const handleOpenDialogForVisitor = () => {
+        setOpenDialogForVisitor(true);
+    }
+
+    const handleCloseDialogForVisitor = () => {
+        setOpenDialogForVisitor(false);
+    }
 
     const handleReceiveDiscussion = async (link: string) => {
         const url = `/api/receiveDiscussion?link=${link}`;
@@ -45,6 +82,11 @@ const DiscussionPage: React.FC = () => {
 
         const discussion = await response.json();
         if (discussion) {
+            if (discussion.is_admin) {
+                setUserTypeNotice("You are viewing this discussion as Admin.");
+            } else {
+                setUserTypeNotice("You are viewing this discussion as Visitor.");
+            }
             const startDate = discussion.vote_start_date;
             const endDate = discussion.vote_end_date;
             setMaxNumOfVoting(discussion.max_nof_selections);
@@ -53,6 +95,21 @@ const DiscussionPage: React.FC = () => {
                 const now = new Date();
                 const remainingTimeUntilStart = Date.parse(startDate.toString()) - now.getTime();
                 const remainingTimeUntilEnd = Date.parse(endDate.toString()) - now.getTime();
+            
+                const formatTime = (days: number, hours: number, minutes: number): string => {
+                    let formattedTime = '';
+                    if (days > 0) {
+                        formattedTime += `${days} day${days > 1 ? 's' : ''} `;
+                    }
+                    if (hours > 0 || (days > 0 && minutes === 0)) {
+                        formattedTime += `${hours} hour${hours > 1 ? 's' : ''} `;
+                    }
+                    if (minutes > 0 || (days === 0 && hours === 0)) {
+                        formattedTime += `${minutes} minute${minutes > 1 ? 's' : ''}`;
+                    }
+                    return formattedTime.trim();
+                };
+            
                 if (remainingTimeUntilEnd < 0) {
                     setVotingNotice(`!!Voting Closed!!`);
                     setVotingStarted(true);
@@ -61,14 +118,17 @@ const DiscussionPage: React.FC = () => {
                     setVotingNotice(`!!Voting Started!!`);
                     setVotingStarted(true);
                 } else {
-                    const remainingDaysUntilStart = Math.ceil(remainingTimeUntilStart / (1000 * 60 * 60 * 24));
-                    if (remainingDaysUntilStart === 1) {
-                        setVotingNotice(`!!Voting Period will Start in ${remainingDaysUntilStart} Day!!`);
-                    } else {
+                    const remainingDaysUntilStart = Math.floor(remainingTimeUntilStart / (1000 * 60 * 60 * 24));
+                    const remainingHoursUntilStart = Math.floor((remainingTimeUntilStart % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                    const remainingMinutesUntilStart = Math.ceil((remainingTimeUntilStart % (1000 * 60 * 60)) / (1000 * 60));
+                    if (remainingDaysUntilStart>1){
                         setVotingNotice(`!!Voting Period will Start in ${remainingDaysUntilStart} Days!!`);
+                    } else{
+                    setVotingNotice(`!!Voting Period will Start in ${formatTime(remainingDaysUntilStart, remainingHoursUntilStart, remainingMinutesUntilStart)}!!`);
                     }
                 }
-            } else {
+            }
+            else {
                 setWillBeVoted(false);
             }
             setDiscussion(discussion);
@@ -441,6 +501,7 @@ const DiscussionPage: React.FC = () => {
         const selectedValue = selectBox.options[selectBox.selectedIndex].value;
         copyToClipboard(selectedValue);
     }
+    
 
     const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>, ideaId: string) => {
         const isChecked = e.target.checked;
@@ -503,6 +564,9 @@ const DiscussionPage: React.FC = () => {
                                 <span>{votingNotice}</span>
                             </div>
                         )}
+                            <div className={styles.adminMessage}>
+                                <span>{userTypeNotice}</span>
+                            </div>
                         <div className={styles.votingDates}>
                             {willBeVoted && (
                                 <div className={styles.dateContainer}>
@@ -511,26 +575,55 @@ const DiscussionPage: React.FC = () => {
                                 </div>
                             )}
                             <div>
-                                {discussion.is_admin ? <div>
-                                    <label>
-                                        <select id="visitor-links" defaultValue={"s"} onChange={copyVisitorLink}>
-                                            <option value="s" disabled>Copy Link</option>
-                                            <option key={"admin"}
-                                                    value={window.location.toString()}>
-                                                Copy Admin Link
-                                            </option>
-                                            {discussion.Group.map((group: any) => (
-                                                <option key={group.id}
-                                                        value={`${location.origin}/discussion-page?link=${group.VisitorLink[0].link}`}>
-                                                    Copy Visitor Link for {group.name}
-                                                </option>
-                                            ))}
-                                        </select>
-                                    </label>
-                                </div> : <button onClick={() => copyToClipboard(window.location.toString())}
-                                                 className={styles.copyButton}>
-                                    Copy Visitor Link
-                                </button>}
+                                {discussion.is_admin ? 
+                                <React.Fragment>
+                                <Button variant="contained" color="success" onClick={handleOpenDialogForAdmin}>
+                                    See links
+                               </Button>
+                               <Dialog
+                               open={openDialogForAdmin}
+                               TransitionComponent={Transition}
+                               keepMounted
+                               onClose={handleCloseDialogForAdmin}
+                               aria-describedby="alert-dialog-slide-description"
+                             ><DialogTitle>{"You can copy and share links with others!"}</DialogTitle>
+                             <DialogContent>
+                               <DialogContentText id="alert-dialog-slide-description">
+                                                            Admin link: {window.location.toString()} <br/>
+                                                            {discussion.Group.map((group: any) => (
+                                <div key={group.id}>
+                                    Visitor Link for {group.name}: {`${location.origin}/discussion-page?link=${group.VisitorLink[0].link}`}
+                                </div>
+                                ))}
+                               </DialogContentText>
+                             </DialogContent>
+                             <DialogActions>
+                               <Button onClick={handleCloseDialogForAdmin}>OK</Button>
+                             </DialogActions>
+                           </Dialog>
+                                 </React.Fragment>
+                                :        
+                                <React.Fragment>
+                                <Button variant="contained" color="success" onClick={handleOpenDialogForVisitor}>
+                                    See visitor link
+                              </Button>
+                              <Dialog
+                              open={openDialogForVisitor}
+                              TransitionComponent={Transition}
+                              keepMounted
+                              onClose={handleCloseDialogForVisitor}
+                              aria-describedby="alert-dialog-slide-description"
+                            ><DialogTitle>{"You can copy and share visitor link with others!"}</DialogTitle>
+                            <DialogContent>
+                              <DialogContentText id="alert-dialog-slide-description">
+                              http://34.83.178.232/discussion-page?link={link}
+                              </DialogContentText>
+                            </DialogContent>
+                            <DialogActions>
+                              <Button onClick={handleCloseDialogForVisitor}>OK</Button>
+                            </DialogActions>
+                          </Dialog>
+                                </React.Fragment>}
                             </div>
                             {willBeVoted && (
                                 <div className={styles.dateContainer}>
